@@ -5,10 +5,9 @@
   "description": "Applies keys to commercetools resources to support the new CSV import/export process.",
   "main": "index.js",
   "scripts": {
-    "install": "npm install",
-    "Query keys": "node queryKeys",
-    "Apply keys": "node applyKeys",
-    "Set keys for Products": "node updateProductKeys"
+    "Install dependencies": "npm install",
+    "Query and apply keys (non-Products)": "node queryKeys",
+    "Query and apply keys (Products)": "node queryProductKeys"
   },
   "author": "Stephen Armstrong",
   "license": "MIT",
