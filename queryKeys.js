@@ -18,7 +18,6 @@ const endpoints = [
     "customerGroups",
     "discountCodes",
     "inventoryEntries",
-    "products",
     "productTypes",
     "taxCategories",
 ];
@@ -31,7 +30,6 @@ const postEndpoints = [
     "updateCustomerGroup",
     "updateDiscountCode",
     "updateInventoryEntry",
-    "updateProduct",
     "updateProductType",
     "updateTaxCategory"
 ]
@@ -58,15 +56,15 @@ async function getBearerToken() {
     }
 }
 
-// Parallel API calls to get the "results" of each PagedQueryResponse
-async function queryResources(arrayOfRequests) {
+// Make API requests
+async function makeAPIRequests(arrayOfRequests) {
     const promises = arrayOfRequests.map(({ url, options }) => fetch(url, options));
     try {
         const responses = await Promise.all(promises);
         const data = await Promise.all(responses.map(res => res.json()));
         return data.map(item => item.data);
     } catch (error) {
-        console.error('❌  Error querying resources:', error);
+        console.error('❌  Error making API requests:', error);
     }
 }
 
@@ -90,8 +88,6 @@ let queryResults = [];
 const bearerToken = await getBearerToken();
 
 try {
-    console.log(`You selected: ${answers.selectedEndpoints}`);
-
     // Construct GraphQL calls for each resource type
     const queryCalls = answers.selectedEndpoints.map(endpoint => ({
         url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
@@ -102,16 +98,16 @@ try {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                query: `query{ ${endpoint}(limit:500, where:"key is not defined"){ results{ id version ${endpoint === "discountCodes" ? `code` : ""} }}}`
+                query: `query{ ${endpoint}(limit:500, where:"key is not defined"){ results{ id version }}}`
             })
         }
     }));
 
     // Results from each call
-    queryResults = await queryResources(queryCalls)
+    queryResults = await makeAPIRequests(queryCalls)
 }
 catch (error) {
-    console.error('An error occurred:', error);
+    console.error('❌  An error occurred:', error);
 }
 
 // Put the GraphQL response into a workable array
@@ -121,7 +117,6 @@ const processedResults = queryResults.reduce((acc, item) => {
     return acc;
 }, {});
 
-// Boolean array which indicates that keys are needed for resources of that resource type
 let keysAreNeeded = [];
 
 // Loop through the selected resource types and display how many need keys
@@ -132,17 +127,16 @@ for (let i = 0; i < answers.selectedEndpoints.length; i++) {
 }
 
 console.log("---")
-console.log(keysAreNeeded)
-console.log(processedResults)
 
 // Prompt user to update resources which need keys
 if (keysAreNeeded.length > 0) {
 
     const choices = keysAreNeeded.map(index => endpoints[index]);
+    const versions = 0
 
     const updateCalls = await inquirer.prompt([
         {
-            type: 'select',
+            type: 'checkbox',
             name: 'selectedEndpoints',
             message: 'Select the resources to apply keys to:',
             choices: keysAreNeeded.map(index => endpoints[index])
@@ -150,25 +144,36 @@ if (keysAreNeeded.length > 0) {
     ]);
 
     try {
-        console.log(`You selected: ${answers.selectedEndpoints}`);
 
-        const updateCalls = answers.selectedEndpoints.map(endpoint => ({
-            url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
-            options: {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${bearerToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    query: `mutation { updateCategory(id: "", version: 1, actions: [{setKey: {key: "dsds"}}]) { id }}`
-                })
+        for (let i = 0; i < keysAreNeeded.length; i++) {
+            if (answers.selectedEndpoints.includes(endpoints[keysAreNeeded[i]])) {
+
+                const updateCalls = [];
+
+                for (let ii = 0; ii < processedResults[endpoints[keysAreNeeded[i]]].length; ii++) {
+                    updateCalls.push({
+                        url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
+                        options: {
+                            method: 'POST',
+                            headers: {
+                                Authorization: `Bearer ${bearerToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                query: `mutation { ${postEndpoints[keysAreNeeded[i]]}(id: "${processedResults[endpoints[keysAreNeeded[i]]][ii].id}", version: ${processedResults[endpoints[keysAreNeeded[i]]][ii].version}, actions: [{setKey: {key: "${endpoints[keysAreNeeded[i]]}_${processedResults[endpoints[keysAreNeeded[i]]][ii].id}"}}]) { id }}`
+                            })
+                        }
+                    })
+                }
+
+                await makeAPIRequests(updateCalls)
             }
-        }));
-
-        results = await queryResources(queryCalls)
+        }
     }
     catch (error) {
-        console.error('An error occurred:', error);
+        console.error('❌  An error occurred:', error);
     }
+
+    console.log("---")
+    console.log("Finished");
 }
