@@ -21,17 +21,19 @@ npm install
 
 ## Available scripts
 
-### Check how many resources require keys
+### Query the resources which need keys
+
+This will return the number of resources which do not have keys.
 
 Run the script "Check keys" using the command:
 
 ```bash
-node checkWhatKeysNeeded
+node queryKeys
 ```
 
-You can select what endpoint to query, and also receive a list of IDs.
+You can select the type of resource to query. If there are fewer than 500, you can also output a list of resources that require `key` values.
 
-### Automatically apply keys to non-Product resources
+### Apply keys
 
 > [!CAUTION]  
 > This action applies boilerplate values to resources which do not currently have a `key`. If you have a preferred format or pattern for keys, then modify the code or update them seperately.
@@ -39,7 +41,7 @@ You can select what endpoint to query, and also receive a list of IDs.
 Run the script "Set keys for non-Product resources" using the following command:
 
 ```bash
-node updateOtherKeys
+node applyKeys
 ```
 
 This script applies `key` values using the format: `resourceType_resourceId`. For example `categories_9a265100-2997-46d4-affc-2d140efd64ae`. In most cases, this should result in unique keys being applied.
@@ -58,7 +60,7 @@ Run the script "Set keys for Products" using the following command:
 node updateProductKeys
 ```
 
-This script will apply `key` values to:
+This script applies `key` values to:
 
 - Products
 - Product Variants

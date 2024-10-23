@@ -21,6 +21,18 @@ const endpoints = [
     "tax-categories" // Required as Products reference them
 ];
 
+// TODO: Add more endpoints if necessary. Consult the commercetools docs for information.
+const resourceTypes = {
+    "cart-discounts": { "label": "Cart Discounts", "singular": "Cart Discount" },
+    "categories": { "label": "Categories", "singular": "Category" },
+    "customer-groups": { "label": "Customer Groups", "singular": "Customer Group" },
+    "discount-codes": { "label": "Discount Codes", "singular": "Discount Code" },
+    "inventory": { "label": "Inventory Entries", "singular": "Inventory Entry" },
+    "product-types": { "label": "Product Types", "singular": "Product Type" },
+    "products": { "label": "Products", "singular": "Product" },
+    "tax-categories": { "label": "Tax Categories", "singular": "Tax Category" },
+}
+
 // This is required as some update actions are "changeKey"
 const changeKeyEndpoints = [
     "channels"
