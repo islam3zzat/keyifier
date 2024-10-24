@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
+import getBearerToken from './getBearerToken.js';
 
 const CTP_PROJECT_KEY = process.env.CTP_PROJECT_KEY;
 const CTP_CLIENT_SECRET = process.env.CTP_CLIENT_SECRET;
@@ -8,58 +9,15 @@ const CTP_AUTH_URL = process.env.CTP_AUTH_URL;
 const CTP_API_URL = process.env.CTP_API_URL;
 const CTP_SCOPES = process.env.CTP_SCOPES;
 
-
-
-// Get the bearer token
-async function getBearerToken() {
-    try {
-        const response = await fetch(`${CTP_AUTH_URL}/oauth/token?grant_type=client_credentials&scope=${CTP_SCOPES}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: "Basic " + btoa(CTP_CLIENT_ID + ":" + CTP_CLIENT_SECRET),
-            }
-        });
-
-        if (!response.ok) {
-            console.log(response)
-            throw new Error(`❌  HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        return data.access_token;
-    } catch (error) {
-        console.error('❌  Error getting bearer token:', error);
-    }
-}
-
-// Parallel API calls to get the "results" of each PagedQueryResponse
-async function queryResources(arrayOfRequests) {
+// Make API requests
+async function makeAPIRequests(arrayOfRequests) {
     const promises = arrayOfRequests.map(({ url, options }) => fetch(url, options));
-
     try {
         const responses = await Promise.all(promises);
         const data = await Promise.all(responses.map(res => res.json()));
-
-        let results = [];
-        for (let i = 0; i < data.length; i++) {
-            results.push(data[i].results)
-        }
-        return results;
+        return data.map(item => item.data);
     } catch (error) {
-        console.error('❌  Error during request:', error);
-    }
-}
-
-// Parallel API calls for carrying out update actions
-async function updateResources(arrayOfRequests) {
-    const promises = arrayOfRequests.map(({ url, options }) => fetch(url, options));
-
-    try {
-        const responses = await Promise.all(promises);
-        const data = await Promise.all(responses.map(res => res.json()));
-        return data;
-    } catch (error) {
-        console.error('❌ Error during request:', error);
+        console.error('❌  Error making API requests:', error);
     }
 }
 

@@ -1,7 +1,6 @@
 import inquirer from 'inquirer';
 import dotenv from 'dotenv';
 dotenv.config();
-import getBearerToken from './getBearerToken.js';
 
 // Environment variables
 const CTP_PROJECT_KEY = process.env.CTP_PROJECT_KEY;
@@ -11,6 +10,7 @@ const CTP_API_URL = process.env.CTP_API_URL;
 // TODO: Add more endpoints if necessary.
 const endpoints = [
     "cartDiscounts",
+    "categories",
     "customerGroups",
     "discountCodes",
     "inventoryEntries",
@@ -23,6 +23,7 @@ const endpoints = [
 // TODO: Add more endpoints if necessary.
 const postEndpoints = [
     "updateCartDiscount",
+    "updateCategory",
     "updateCustomerGroup",
     "updateDiscountCode",
     "updateInventoryEntry",
@@ -30,6 +31,8 @@ const postEndpoints = [
     "updateStandalonePrice",
     "updateTaxCategory"
 ]
+
+// Get the bearer token
 
 // Make API requests
 async function makeAPIRequests(arrayOfRequests) {
@@ -73,7 +76,7 @@ try {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                query: `query{ ${endpoint}(limit:500, where:"key is not defined"){ results{ id version }}}`
+                query: `query{ ${endpoint}(limit:500, ${endpoint === "categories" ? `` : `where:"key is not defined"`}){ results{ id version ${endpoint === "categories" ? `key assets { id key }` : ""} }}}`
             })
         }
     }));
@@ -101,6 +104,7 @@ for (let i = 0; i < answers.selectedEndpoints.length; i++) {
     if (processedResults[answers.selectedEndpoints[i]].length > 0) { keysAreNeeded.push(endpoints.indexOf(answers.selectedEndpoints[i])) }
 }
 
+console.log(processedResults)
 console.log("---")
 
 // Prompt user to update resources which need keys
