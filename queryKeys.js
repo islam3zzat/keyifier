@@ -19,6 +19,7 @@ const endpoints = [
     "discountCodes",
     "inventoryEntries",
     "productTypes",
+    "standalonePrices",
     "taxCategories",
 ];
 
@@ -31,6 +32,7 @@ const postEndpoints = [
     "updateDiscountCode",
     "updateInventoryEntry",
     "updateProductType",
+    "updateStandalonePrice",
     "updateTaxCategory"
 ]
 

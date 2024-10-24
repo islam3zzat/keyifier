@@ -19,7 +19,8 @@ These scripts are intended to prepare Composable Commerce Projects for the new [
     - Categories
     - Customer Groups
     - Discount Codes
-    - Products 
+    - Products
+    - Standalone Prices
     - Tax Categories
 4. Download the **Environment Variables (.env)** for this API Client, rename the downloaded file `.env`, and copy it to the cloned repository.
 
