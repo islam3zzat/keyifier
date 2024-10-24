@@ -7,7 +7,7 @@ const CTP_CLIENT_ID = process.env.CTP_CLIENT_ID;
 const CTP_AUTH_URL = process.env.CTP_AUTH_URL;
 const CTP_SCOPES = process.env.CTP_SCOPES;
 
-export default async function getBearerToken() {
+export async function getBearerToken() {
     try {
         const response = await fetch(`${CTP_AUTH_URL}/oauth/token?grant_type=client_credentials&scope=${CTP_SCOPES}`, {
             method: 'POST',
@@ -25,5 +25,18 @@ export default async function getBearerToken() {
         return data.access_token;
     } catch (error) {
         console.error('❌  Error getting bearer token:', error);
+    }
+}
+
+
+// Make API requests
+export async function makeAPIRequests(arrayOfRequests) {
+    const promises = arrayOfRequests.map(({ url, options }) => fetch(url, options));
+    try {
+        const responses = await Promise.all(promises);
+        const data = await Promise.all(responses.map(res => res.json()));
+        return data.map(item => item.data);
+    } catch (error) {
+        console.error('❌  Error making API requests:', error);
     }
 }

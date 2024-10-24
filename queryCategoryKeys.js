@@ -1,63 +1,13 @@
-import inquirer from 'inquirer';
 import dotenv from 'dotenv';
+import { getBearerToken, makeAPIRequests } from './functions.js';
 dotenv.config();
 
 // Environment variables
 const CTP_PROJECT_KEY = process.env.CTP_PROJECT_KEY;
 const CTP_API_URL = process.env.CTP_API_URL;
 
-// Endpoints to query. These are the GraphQL endpoints, not the HTTP API ones.
-// TODO: Add more endpoints if necessary.
-const endpoints = [
-    "cartDiscounts",
-    "categories",
-    "customerGroups",
-    "discountCodes",
-    "inventoryEntries",
-    "productTypes",
-    "standalonePrices",
-    "taxCategories",
-];
-
-// Endpoints to make updates to. These are the GraphQL endpoints, not the HTTP API ones.
-// TODO: Add more endpoints if necessary.
-const postEndpoints = [
-    "updateCartDiscount",
-    "updateCategory",
-    "updateCustomerGroup",
-    "updateDiscountCode",
-    "updateInventoryEntry",
-    "updateProductType",
-    "updateStandalonePrice",
-    "updateTaxCategory"
-]
-
-// Get the bearer token
-
-// Make API requests
-async function makeAPIRequests(arrayOfRequests) {
-    const promises = arrayOfRequests.map(({ url, options }) => fetch(url, options));
-    try {
-        const responses = await Promise.all(promises);
-        const data = await Promise.all(responses.map(res => res.json()));
-        return data.map(item => item.data);
-    } catch (error) {
-        console.error('❌  Error making API requests:', error);
-    }
-}
-
 // Console input starts
 console.clear();
-
-// Prompt the user to select the resource types.
-const answers = await inquirer.prompt([
-    {
-        type: 'checkbox',
-        name: 'selectedEndpoints',
-        message: 'Select the resource types to query:',
-        choices: endpoints
-    }
-]);
 
 // Contains the results of each query
 let queryResults = [];
@@ -65,10 +15,19 @@ let queryResults = [];
 // Get the bearer token
 const bearerToken = await getBearerToken();
 
+// Categories need two calls:
+
+// One call where Assets is not empty
+// One call where key is not defined
+// Merge the results into one logical unit
+// Construct update actions based on key not being present, and Asset keys not being present
+// Mass call to update
+// Use this as the basis for Products as well
+
 try {
-    // Construct GraphQL calls for each resource type
-    const queryCalls = answers.selectedEndpoints.map(endpoint => ({
-        url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
+    queryResults = await makeAPIRequests([
+        {
+            url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
         options: {
             method: 'POST',
             headers: {
@@ -76,26 +35,34 @@ try {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                query: `query{ ${endpoint}(limit:500, ${endpoint === "categories" ? `` : `where:"key is not defined"`}){ results{ id version ${endpoint === "categories" ? `key assets { id key }` : ""} }}}`
+                query: `query{ categories(limit:500){ results{ id version key assets { id key }} }}`
             })
         }
-    }));
-
-    // Results from each call
-    queryResults = await makeAPIRequests(queryCalls)
+        }
+    ])
 }
 catch (error) {
     console.error('❌  An error occurred:', error);
 }
 
-// Put the GraphQL response into a workable array
+
+
 const processedResults = queryResults.reduce((acc, item) => {
     const key = Object.keys(item)[0];
-    acc[key] = item[key].results;
+    acc = item[key].results;
     return acc;
 }, {});
 
-let keysAreNeeded = [];
+console.log(processedResults)
+
+// Put the GraphQL response into a workable array
+/*const processedResults = queryResults.reduce((acc, item) => {
+    const key = Object.keys(item)[0];
+    acc[key] = item[key].results;
+    return acc;
+}, {});*/
+
+/*let keysAreNeeded = [];
 
 // Loop through the selected resource types and display how many need keys
 console.log("Results: ")
@@ -155,4 +122,4 @@ if (keysAreNeeded.length > 0) {
 
     console.log("---")
     console.log("Finished");
-}
+}*/

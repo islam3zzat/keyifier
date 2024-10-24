@@ -1,7 +1,7 @@
 import inquirer from 'inquirer';
 import dotenv from 'dotenv';
 dotenv.config();
-import getBearerToken from './getBearerToken.js';
+import { getBearerToken, makeAPIRequests } from './functions.js';
 
 // Environment variables
 const CTP_PROJECT_KEY = process.env.CTP_PROJECT_KEY;
@@ -31,17 +31,6 @@ const postEndpoints = [
     "updateTaxCategory"
 ]
 
-// Make API requests
-async function makeAPIRequests(arrayOfRequests) {
-    const promises = arrayOfRequests.map(({ url, options }) => fetch(url, options));
-    try {
-        const responses = await Promise.all(promises);
-        const data = await Promise.all(responses.map(res => res.json()));
-        return data.map(item => item.data);
-    } catch (error) {
-        console.error('❌  Error making API requests:', error);
-    }
-}
 
 // Console input starts
 console.clear();
