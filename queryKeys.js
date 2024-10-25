@@ -7,11 +7,12 @@ import { getBearerToken, makeAPIRequests } from './functions.js';
 const CTP_PROJECT_KEY = process.env.CTP_PROJECT_KEY;
 const CTP_API_URL = process.env.CTP_API_URL;
 
-// Endpoints to query. These are the GraphQL endpoints, not the HTTP API ones.
+// Endpoints to query. These are the GraphQL endpoints, not HTTP API ones.
 // TODO: Add more endpoints if necessary.
 const endpoints = [
     "cartDiscounts",
     "customerGroups",
+    "customers",
     "discountCodes",
     "inventoryEntries",
     "productTypes",
@@ -24,13 +25,13 @@ const endpoints = [
 const postEndpoints = [
     "updateCartDiscount",
     "updateCustomerGroup",
+    "updateCustomer",
     "updateDiscountCode",
     "updateInventoryEntry",
     "updateProductType",
     "updateStandalonePrice",
     "updateTaxCategory"
 ]
-
 
 // Console input starts
 console.clear();
@@ -95,13 +96,10 @@ console.log("---")
 // Prompt user to update resources which need keys
 if (keysAreNeeded.length > 0) {
 
-    const choices = keysAreNeeded.map(index => endpoints[index]);
-    const versions = 0
-
-    const updateCalls = await inquirer.prompt([
+    const updateCallPrompt = await inquirer.prompt([
         {
-            type: 'checkbox',
-            name: 'selectedEndpoints',
+            type: keysAreNeeded.length === 1 ? "select" : 'checkbox',
+            name: 'endpointsToUpdate',
             message: 'Select the resources to apply keys to:',
             choices: keysAreNeeded.map(index => endpoints[index])
         }
@@ -110,8 +108,7 @@ if (keysAreNeeded.length > 0) {
     try {
 
         for (let i = 0; i < keysAreNeeded.length; i++) {
-            if (answers.selectedEndpoints.includes(endpoints[keysAreNeeded[i]])) {
-
+            if (updateCallPrompt.endpointsToUpdate.includes(endpoints[keysAreNeeded[i]])) {
                 const updateCalls = [];
 
                 for (let ii = 0; ii < processedResults[endpoints[keysAreNeeded[i]]].length; ii++) {

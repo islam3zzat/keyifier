@@ -6,8 +6,9 @@
   "main": "index.js",
   "scripts": {
     "Install dependencies": "npm install",
-    "Query and apply keys (non-Products)": "node queryKeys",
-    "Query and apply keys (Products)": "node queryProductKeys"
+    "Query and apply keys (Products)": "node queryProductKeys",
+    "Query and apply keys (Categories)": "node queryCategoryKeys",
+    "Query and apply keys (other)": "node queryKeys"
   },
   "author": "Stephen Armstrong",
   "license": "MIT",
