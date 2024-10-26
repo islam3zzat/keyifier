@@ -33,9 +33,47 @@ These scripts are intended to prepare Composable Commerce Projects to use the im
 
 The following scripts are available:
 
-- Query and apply keys (Products)
-- Query and apply keys (Categories)
-- Query and apply keys (other)
+- [Query and apply keys (Categories)](#query-and-apply-keys-categories)
+- [Query and apply keys (Products)](#query-and-apply-keys-products)
+- [Query and apply keys (other)](#query-and-apply-keys-other)
+
+### Query and apply keys (Categories)
+
+This script applies `key` values to:
+
+- Categories
+- Category Assets
+
+You can run this script with the following command:
+
+```bash
+node queryCategoryKeys
+```
+
+This script applies `key` values using the format: `resourceType_resourceId`. For example `categories_af206771-d70d-43e0-9e8a-2de76d8f7f94_assets_4b77be7f-ff3b-4cef-867d-09d473d335b1`. In most cases, this should result in unique keys being applied.
+
+Due to limits of Composable Commerce APIs, you must run this script multiple times if you have over `500` Categories that require keys or have Assets that require keys.
+
+### Query and apply keys (Products)
+
+This script applies `key` values to:
+
+- Products
+- Product Variants
+- Product Prices
+- Product Assets
+
+This includes `current` and `staged` projections.
+
+You can run the script with the following command:
+
+```bash
+node queryProductKeys
+```
+
+This script applies `key` values using the format: `resourceType_resourceId`. For example `products_bd0189b6-a2bc-4f49-8ca9-40919d1bd69e_variant_1_prices_1f70441a-bfdc-4ae3-b07a-3fba8facc0ac`. In most cases, this should result in unique keys being applied.
+
+This script may take a long time to complete depending on how many Products, Product Variants, Prices, and Assets you have.
 
 ### Query and apply keys (other)
 
@@ -52,39 +90,3 @@ If the queried resource types have resources without keys, you will be prompted 
 This script applies `key` values using the format:  `{resourceType}_{resourceId}`. For example `categories_9a265100-2997-46d4-affc-2d140efd64ae`. In 99% of cases, this should result in unique keys being applied.
 
 Due to limits of Composable Commerce APIs, you must run this script multiple times if you have over `500` resources of one resource type that require keys.
-
-### Query and apply keys (Categories)
-
-You can run the script with the following command:
-
-```bash
-node queryCategoryKeys
-```
-This script applies `key` values to:
-
-- Categories
-- Category Assets
-
-This script applies `key` values using the format: `resourceType_resourceId`. For example `categories_af206771-d70d-43e0-9e8a-2de76d8f7f94_assets_4b77be7f-ff3b-4cef-867d-09d473d335b1`. In most cases, this should result in unique keys being applied.
-
-### Query and apply keys (Products)
-
-You can run the script with the following command:
-
-```bash
-node queryProductKeys
-```
-
-This script applies `key` values to:
-
-- Products
-- Product Variants
-- Product Prices
-- Product Assets
-
-This includes `current` and `staged` projections.
-
-This script applies `key` values using the format: `resourceType_resourceId`. For example `products_bd0189b6-a2bc-4f49-8ca9-40919d1bd69e_variant_1_prices_1f70441a-bfdc-4ae3-b07a-3fba8facc0ac`. In most cases, this should result in unique keys being applied.
-
-This script may take a long time to complete depending on how many Products, Product Variants, Prices, and Assets you have.
-
