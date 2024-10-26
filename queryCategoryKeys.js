@@ -9,25 +9,15 @@ const CTP_API_URL = process.env.CTP_API_URL;
 // Console input starts
 console.clear();
 
-// Contains the results of each query
-let queryResults = [];
-
 // Get the bearer token
 const bearerToken = await getBearerToken();
 
-// Categories need two calls:
-
-// One call where Assets is not empty
-// One call where key is not defined
-// Merge the results into one logical unit
-// Construct update actions based on key not being present, and Asset keys not being present
-// Mass call to update
-// Use this as the basis for Products as well
-
+// Get all the Categories without keys
+let withoutKeys = [];
 try {
-    queryResults = await makeAPIRequests([
-        {
-            url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
+    // Get Categories without keys
+    const queryKeys = [{
+        url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
         options: {
             method: 'POST',
             headers: {
@@ -35,91 +25,108 @@ try {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                query: `query{ categories(limit:500){ results{ id version key assets { id key }} }}`
+                query: `query{ categories(limit:500, where:"key is not defined"){ results{ id version }}}`
             })
         }
-        }
-    ])
+    }];
+
+    // Results from each call
+    withoutKeys = await makeAPIRequests(queryKeys)
 }
 catch (error) {
     console.error('❌  An error occurred:', error);
 }
 
+console.log(`${withoutKeys[0].categories.results.length} Categories need keys.`)
 
+// Update the Categories with keys
+try {
+    if (withoutKeys[0].categories.results.length > 0) {
+        console.log("Updating Category keys...")
 
-const processedResults = queryResults.reduce((acc, item) => {
-    const key = Object.keys(item)[0];
-    acc = item[key].results;
-    return acc;
-}, {});
+        const updateCalls = withoutKeys[0].categories.results.map(result => ({
+            url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
+            options: {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${bearerToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    query: `mutation { updateCategory(id: "${result.id}", version: ${result.version}, actions: [{setKey: {key: "categories_${result.id}"}}]) { id }}`
+                })
+            }
+        }));
 
-console.log(processedResults)
-
-// Put the GraphQL response into a workable array
-/*const processedResults = queryResults.reduce((acc, item) => {
-    const key = Object.keys(item)[0];
-    acc[key] = item[key].results;
-    return acc;
-}, {});*/
-
-/*let keysAreNeeded = [];
-
-// Loop through the selected resource types and display how many need keys
-console.log("Results: ")
-for (let i = 0; i < answers.selectedEndpoints.length; i++) {
-    console.log(`${processedResults[answers.selectedEndpoints[i]].length} ${answers.selectedEndpoints[i]} need keys.`)
-    if (processedResults[answers.selectedEndpoints[i]].length > 0) { keysAreNeeded.push(endpoints.indexOf(answers.selectedEndpoints[i])) }
+        await makeAPIRequests(updateCalls)
+    }
+}
+catch (error) {
+    console.error('❌  An error occurred:', error);
 }
 
-console.log(processedResults)
-console.log("---")
-
-// Prompt user to update resources which need keys
-if (keysAreNeeded.length > 0) {
-
-    const choices = keysAreNeeded.map(index => endpoints[index]);
-    const versions = 0
-
-    const updateCalls = await inquirer.prompt([
-        {
-            type: 'checkbox',
-            name: 'selectedEndpoints',
-            message: 'Select the resources to apply keys to:',
-            choices: keysAreNeeded.map(index => endpoints[index])
+// Get all the Categories which have Assets, but the Assets have no keys
+let withoutAssetKeys = [];
+try {
+    // Construct GraphQL calls for Category Assets which need keys
+    const queryAssetKeys = [{
+        url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
+        options: {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${bearerToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: `query{ categories(limit:500 where:"assets is not empty and assets(key is not defined)"){ results{ id version assets{ id } } }}`
+            })
         }
-    ]);
+    }];
 
-    try {
+    // Results from each call
+    withoutAssetKeys = await makeAPIRequests(queryAssetKeys)
+}
+catch (error) {
+    console.error('❌  An error occurred:', error);
+}
 
-        for (let i = 0; i < keysAreNeeded.length; i++) {
-            if (answers.selectedEndpoints.includes(endpoints[keysAreNeeded[i]])) {
+// Get total number of Assets needing keys
+const assetsNeedingKeys = withoutAssetKeys[0].categories.results.reduce(
+    (total, result) => total + result.assets.length,
+    0
+);
+console.log(`${assetsNeedingKeys} Category Assets need keys.`)
 
-                const updateCalls = [];
+// Update the Category Assets with keys
+try {
+    if (assetsNeedingKeys > 0) {
+        console.log("Updating Category Asset keys...")
 
-                for (let ii = 0; ii < processedResults[endpoints[keysAreNeeded[i]]].length; ii++) {
-                    updateCalls.push({
-                        url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
-                        options: {
-                            method: 'POST',
-                            headers: {
-                                Authorization: `Bearer ${bearerToken}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                query: `mutation { ${postEndpoints[keysAreNeeded[i]]}(id: "${processedResults[endpoints[keysAreNeeded[i]]][ii].id}", version: ${processedResults[endpoints[keysAreNeeded[i]]][ii].version}, actions: [{setKey: {key: "${endpoints[keysAreNeeded[i]]}_${processedResults[endpoints[keysAreNeeded[i]]][ii].id}"}}]) { id }}`
-                            })
-                        }
+        const updateCalls = withoutAssetKeys[0].categories.results.map(({ id, version, assets }) => {
+
+            // Make actions for each Asset to update
+            const actions = assets.map(asset => (
+                `{ setAssetKey: { assetId: "${asset.id}", assetKey: "categories_${id}_assets_${asset.id}" } }`
+            )).join(' ');
+
+            return {
+                url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
+                options: {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${bearerToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: `mutation { updateCategory(id: "${id}", version: ${version}, actions: [${actions}]) { id }}`
                     })
                 }
+            };
+        });
 
-                await makeAPIRequests(updateCalls)
-            }
-        }
+        await makeAPIRequests(updateCalls)
     }
-    catch (error) {
-        console.error('❌  An error occurred:', error);
-    }
-
-    console.log("---")
-    console.log("Finished");
-}*/
+}
+catch (error) {
+    console.error('❌  An error occurred:', error);
+}
