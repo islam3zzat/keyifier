@@ -72,7 +72,7 @@ try {
     queryResults = await makeAPIRequests(queryCalls)
 }
 catch (error) {
-    console.error('❌  An error occurred:', error);
+    console.error('❌  An error occurred: ', error);
 }
 
 // Put the GraphQL response into a workable array
@@ -132,7 +132,7 @@ if (keysAreNeeded.length > 0) {
         }
     }
     catch (error) {
-        console.error('❌  An error occurred:', error);
+        console.error('❌  An error occurred: ', error);
     }
 
     console.log("---")

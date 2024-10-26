@@ -1,26 +1,114 @@
+import inquirer from 'inquirer';
 import dotenv from 'dotenv';
 dotenv.config();
-import getBearerToken from './getBearerToken.js';
+import { getBearerToken, makeAPIRequests } from './functions.js';
 
 const CTP_PROJECT_KEY = process.env.CTP_PROJECT_KEY;
-const CTP_CLIENT_SECRET = process.env.CTP_CLIENT_SECRET;
-const CTP_CLIENT_ID = process.env.CTP_CLIENT_ID;
-const CTP_AUTH_URL = process.env.CTP_AUTH_URL;
 const CTP_API_URL = process.env.CTP_API_URL;
-const CTP_SCOPES = process.env.CTP_SCOPES;
 
-// Make API requests
-async function makeAPIRequests(arrayOfRequests) {
-    const promises = arrayOfRequests.map(({ url, options }) => fetch(url, options));
-    try {
-        const responses = await Promise.all(promises);
-        const data = await Promise.all(responses.map(res => res.json()));
-        return data.map(item => item.data);
-    } catch (error) {
-        console.error('❌  Error making API requests:', error);
+// Console input starts
+console.clear();
+
+// Get the bearer token
+const bearerToken = await getBearerToken();
+
+console.log("Starting...");
+
+applyProductKeys();
+
+
+async function applyProductKeys() {
+
+    let totalProductsResponse = await makeAPIRequests([{
+        url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
+        options: {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${bearerToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                query: `query{products(where:"key is not defined"){total}}`
+            })
+        }
+    }]);
+
+    const total = totalProductsResponse[0].products.total;
+
+    console.log(`${total} Products need keys.`)
+
+
+    if (total > 0) {
+
+        console.log("Updating Product keys...")
+
+        let count = 500;
+
+        do {
+
+            try {
+                // Get up to 500 Products
+                const queryResults = await makeAPIRequests([{
+                    url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
+                    options: {
+                        method: 'POST',
+                        headers: {
+                            Authorization: `Bearer ${bearerToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            query: `query{ products(limit:500, where:"key is not defined"){ count results{ id version }}}`
+                        })
+                    }
+                }])
+
+                // Update the counter
+                count = queryResults[0].products.count;
+
+                // Update keys
+                if (count > 0) {
+
+                    const updateCalls = queryResults[0].products.results.map(result => ({
+                        url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
+                        options: {
+                            method: 'POST',
+                            headers: {
+                                Authorization: `Bearer ${bearerToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                query: `mutation { updateProduct(id: "${result.id}", version: ${result.version}, actions: [{setKey: {key: "products_${result.id}"}}]) { id }}`
+                            })
+                        }
+                    }));
+
+                    await makeAPIRequests(updateCalls);
+                }
+            }
+            catch (error) {
+                console.error('❌  An error occurred: ', error);
+            }
+
+        } while (count > 0)
+
+        console.log("Finished applying Keys to Products.")
     }
 }
 
+async function applyProductVariantKeys() {
+
+}
+
+/*
+do {
+
+
+    current++;
+} while (current < total)*/
+
+
+
+/*
 async function fetchProduct(current) {
     try {
         const response = await fetch(`${CTP_API_URL}/${CTP_PROJECT_KEY}/products?sort=createdAt+asc&limit=1&offset=${current}`, {
@@ -189,4 +277,4 @@ do {
 
 } while (current < total)
 
-console.log("🏁 Finished.")
+console.log("🏁 Finished.")*/

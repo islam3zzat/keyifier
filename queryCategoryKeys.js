@@ -34,7 +34,7 @@ try {
     withoutKeys = await makeAPIRequests(queryKeys)
 }
 catch (error) {
-    console.error('❌  An error occurred:', error);
+    console.error('❌  An error occurred: ', error);
 }
 
 console.log(`${withoutKeys[0].categories.results.length} Categories need keys.`)
@@ -62,7 +62,7 @@ try {
     }
 }
 catch (error) {
-    console.error('❌  An error occurred:', error);
+    console.error('❌  An error occurred: ', error);
 }
 
 // Get all the Categories which have Assets, but the Assets have no keys
@@ -87,7 +87,7 @@ try {
     withoutAssetKeys = await makeAPIRequests(queryAssetKeys)
 }
 catch (error) {
-    console.error('❌  An error occurred:', error);
+    console.error('❌  An error occurred: ', error);
 }
 
 // Get total number of Assets needing keys
@@ -128,5 +128,5 @@ try {
     }
 }
 catch (error) {
-    console.error('❌  An error occurred:', error);
+    console.error('❌  An error occurred: ', error);
 }

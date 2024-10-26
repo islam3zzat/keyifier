@@ -21,6 +21,8 @@ export async function getBearerToken() {
             console.log(response)
             throw new Error(`❌  HTTP error! status: ${response.status}`);
         }
+
+        console.log("✔️  Got bearer token.");
         const data = await response.json();
         return data.access_token;
     } catch (error) {
