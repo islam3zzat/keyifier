@@ -14,7 +14,7 @@ const bearerToken = await getBearerToken();
 
 console.log("Starting...");
 
-applyProductKeys();
+applyProductVariantKeys();
 
 
 async function applyProductKeys() {
@@ -96,6 +96,218 @@ async function applyProductKeys() {
 }
 
 async function applyProductVariantKeys() {
+
+    console.log("Updating Product Variant keys...")
+
+    // Controls the do/while loop
+    let count = 500;
+
+    // Master Variant updates
+    do {
+        try {
+
+            // Get all products that have a "null" MasterVariant key
+            const queryResults = await makeAPIRequests([{
+                url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
+                options: {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${bearerToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: `query{ products(limit: 500, where: "masterData(current(masterVariant(key is not defined)))") { total count results { id version masterData {  current { masterVariant { id sku  key }  }  staged { masterVariant { id  sku key }  } } } }}`
+                    })
+                }
+            }])
+
+            // Update the counter            
+            count = queryResults[0].products.count;
+
+            let updates = new Array(queryResults[0].products.results.length);
+
+            // Update keys
+            if (count > 0) {
+
+                for (let i = 0; i < queryResults[0].products.results.length; i++) {
+
+                    // Set newMasterKey to the current master variant key
+                    let newMasterKey = queryResults[0].products.results[i].masterData.current.masterVariant.key;
+
+                    // If not set, use the staged
+                    if (newMasterKey === null) {
+                        newMasterKey = queryResults[0].products.results[i].masterData.staged.masterVariant.key
+                    }
+
+                    // If still null, then set to the current SKU, or to a set value
+                    if (newMasterKey === null) {
+                        newMasterKey = queryResults[0].products.results[i].masterData.current.masterVariant.sku === null ? queryResults[0].products.results[i].masterData.staged.masterVariant.sku : queryResults[0].products.results[i].masterData.current.masterVariant.sku;
+                        if (newMasterKey === null) {
+                            newMasterKey = `products_${queryResults[0].products.results[i].id}_variants_1`;
+                        }
+                    }
+
+                    updates[i] = `{ setProductVariantKey: { variantId: 1, key: "${newMasterKey}" staged: false } }`
+                }
+
+                const updateCalls = queryResults[0].products.results.map((result, index) => ({
+                    url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
+                    options: {
+                        method: 'POST',
+                        headers: {
+                            Authorization: `Bearer ${bearerToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            query: `mutation { updateProduct(id: "${result.id}", version: ${result.version}, actions: [${updates[index]}]) { id }}`
+                        })
+                    }
+                }));
+
+                await makeAPIRequests(updateCalls);
+            }
+        }
+        catch (error) {
+            console.error('❌  An error occurred: ', error);
+        }
+    } while (count > 0)
+
+    console.log("Finished applying Keys to Master Variants.")
+
+    // Other variant updates
+
+    // Reset counter
+    count = 500;
+    do {
+        try {
+            // Get all Products where Variants are present but their key is not defined
+            const queryResults = await makeAPIRequests([{
+                url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
+                options: {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${bearerToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: `query{ products(limit: 500, where: "masterData(current(variants is not empty and variants(key is not defined)))") { total count results { id version   masterData {  current { variants { id sku  key } }  staged { variants { id sku  key } } } } }}`
+                    })
+                }
+            }])
+
+            // Update the counter            
+            count = queryResults[0].products.count;
+
+            let updates = new Array(queryResults[0].products.results.length);
+
+            // Update keys
+            if (count > 0) {
+
+                for (let i = 0; i < queryResults[0].products.results.length; i++) {
+
+                    // TODO: For now I am not implementing the key updater if the number of Variants differs between current and staged
+                    if (queryResults[0].products.results[i].masterData.current.variants.length === queryResults[0].products.results[i].masterData.current.variants.length) {
+
+                        for (let ii = 0; ii < queryResults[0].products.results[i].masterData.current.variants.length; ii++) {
+                            let newVariantKey = queryResults[0].products.results[i].masterData.current.variants[ii].key === null ? queryResults[0].products.results[i].masterData.staged.variants[ii].key : queryResults[0].products.results[i].masterData.current.variants[ii].key;
+
+                            if (newVariantKey === null) {
+                                newVariantKey = queryResults[0].products.results[i].masterData.current.variants[ii].sku === null ? queryResults[0].products.results[i].masterData.staged.variants[ii].sku : queryResults[0].products.results[i].masterData.current.variants[ii].sku;
+                                if (newVariantKey === null) {
+                                    newVariantKey = `products_${queryResults[0].products.results[i].id}_variants_${queryResults[0].products.results[i].masterData.current.variants[ii].id}`;
+                                }
+
+                                updates[i] += ` { setProductVariantKey: { variantId: ${queryResults[0].products.results[i].masterData.current.variants[ii].id}, key: "${newVariantKey}" staged: false } }`
+                            }
+                        }
+                    }
+                    else {
+                        console.log(`Product: ${queryResults[0].products.results[i].id}. The number of Variants differs between current and staged projections. You must update their keys manually.`)
+                    }
+                }
+
+                const updateCalls = queryResults[0].products.results.map((result, index) => ({
+                    url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
+                    options: {
+                        method: 'POST',
+                        headers: {
+                            Authorization: `Bearer ${bearerToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            query: `mutation { updateProduct(id: "${result.id}", version: ${result.version}, actions: [${updates[index]}]) { id }}`
+                        })
+                    }
+                }));
+
+                await makeAPIRequests(updateCalls);
+            }
+        }
+        catch (error) {
+            console.error('❌  An error occurred: ', error);
+        }
+    } while (count > 0)
+
+    console.log("Finished applying Keys to other Variants.")
+}
+
+async function applyProductPriceKeys() {
+
+    `{
+  products(limit: 500, where: "masterData(current(variants(prices is not empty and prices(key is not defined))))") {
+    total
+    count
+    results {
+      id
+      version
+      key
+      masterData {
+        current {
+          masterVariant {
+            id
+            key
+            
+            
+            prices{
+              id
+              key
+            }
+          }
+          variants {
+            id
+            key
+            prices{
+              id
+              key
+            }
+          }
+        }
+        staged {
+          masterVariant {
+            id
+            key
+            prices{
+              id
+              key
+            }
+          }
+          variants {
+            id
+            key
+            prices{
+              id
+              key
+            }
+          }
+        }
+      }
+    }
+  }
+}
+`
+}
+
+async function applyProductAssetKeys() {
 
 }
 
