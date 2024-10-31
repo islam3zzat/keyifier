@@ -37,8 +37,15 @@ export async function makeAPIRequests(arrayOfRequests) {
     try {
         const responses = await Promise.all(promises);
         const data = await Promise.all(responses.map(res => res.json()));
+
+        // Crash on errors.
+        const errorData = data.map(item => item.errors);
+        if (errorData.filter(item => item !== undefined).length > 0) {
+            throw new Error(errorData[0].map(error => error.message).join('\n'));
+        }
+
         return data.map(item => item.data);
     } catch (error) {
-        console.error('❌  Error making API requests:', error);
+        console.error('❌  Error making API requests:\n', error);
     }
 }
