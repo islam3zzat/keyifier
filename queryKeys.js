@@ -112,6 +112,31 @@ if (keysAreNeeded.length > 0) {
                 const updateCalls = [];
 
                 for (let ii = 0; ii < processedResults[endpoints[keysAreNeeded[i]]].length; ii++) {
+
+                    // Special case as this update action is missing from GraphQL
+                    if (endpoints[keysAreNeeded[i]] === "inventoryEntries") {
+                        updateCalls.push({
+                            url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/inventory/${processedResults[endpoints[keysAreNeeded[i]]][ii].id}`,
+                            options: {
+                                method: 'POST',
+                                headers: {
+                                    Authorization: `Bearer ${bearerToken}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    version: processedResults[endpoints[keysAreNeeded[i]]][ii].version,
+                                    actions: [
+                                        {
+                                            action: "setKey",
+                                            key: `inventoryEntries_${processedResults[endpoints[keysAreNeeded[i]]][ii].id}`
+                                        }
+                                    ]
+                                })
+                            }
+                        })
+                    }
+                    else {
+
                     updateCalls.push({
                         url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
                         options: {
@@ -125,6 +150,7 @@ if (keysAreNeeded.length > 0) {
                             })
                         }
                     })
+                }
                 }
 
                 await makeAPIRequests(updateCalls)
