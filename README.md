@@ -1,4 +1,4 @@
-This repository contains scripts that applies boilerplate `key` values to resources.
+This repository contains scripts that apply boilerplate `key` values to resources.
 
 # What is this useful for?
 
