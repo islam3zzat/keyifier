@@ -26,7 +26,7 @@ export async function getBearerToken() {
         const data = await response.json();
         return data.access_token;
     } catch (error) {
-        console.error('❌  Error getting bearer token:', error);
+        throw new Error(`❌  Error getting bearer token:\n ${error}`);
     }
 }
 
@@ -45,7 +45,7 @@ export async function makeAPIRequests(arrayOfRequests) {
         }
 
         return data.map(item => item.data);
-    } catch (error) {
-        console.error('❌  Error making API requests:\n', error);
+    } catch (error) { 
+        throw new Error(`❌  Error making API requests:\n ${error}`);
     }
 }
