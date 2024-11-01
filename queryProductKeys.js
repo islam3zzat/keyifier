@@ -177,7 +177,7 @@ async function applyProductVariantKeys() {
                         }
                     }
 
-                    updates[i] = `{ setProductVariantKey: { variantId: 1, key: "${newMasterKey}" staged: false } }`
+                    updates[i] = `{ setProductVariantKey: { variantId: ${queryResults[0].products.results[i].masterData.current.masterVariant.id}, key: "${newMasterKey}" staged: false } }`
                 }
 
                 const updateCalls = queryResults[0].products.results.map((result, index) => ({
@@ -466,8 +466,6 @@ async function applyProductPriceKeys() {
                     }
                 }));
 
-                console.log(updateCalls)
-
                 await makeAPIRequests(updateCalls);
             }
         }
@@ -621,7 +619,7 @@ async function applyProductAssetKeys() {
                         if (queryResults[0].products.results[i].masterData.current.variants[v].assets.length > 0) {
                             // Only update the price keys if they're identical
                             if (queryResults[0].products.results[i].masterData.current.variants[v].assets.length === queryResults[0].products.results[i].masterData.staged.variants[v].assets.length) {
-                                console.log(queryResults[0].products.results[i].masterData.current.variants[v].assets.length)
+
                                 for (let ii = 0; ii < queryResults[0].products.results[i].masterData.current.variants[v].assets.length; ii++) {
 
                                     // Get index of the same price in staged
