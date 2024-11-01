@@ -1,20 +1,24 @@
-# Keyifier
-
 This repository contains scripts that perform the following actions in commercetools Composable Commerce Projects:
 
 - Querying how many of your resources requires keys.
 - Applying boilerplate `key` values to resources.
 
-These scripts are intended to prepare Composable Commerce Projects to use the import and export features in Composable Commerce, as these use `key` values as identifiers when updating resources.
+# What is this useful for?
 
-## Set up
+Import and export functionality in Composable Commerce uses the `key` field as identifiers for resources. If your resources do not have a `key` value, they cannot be updated via import and their references may be broken in exported files.
+
+As the `key` value is optional, resources within your Composable Commerce Project may lack them.
+
+These scripts apply boilerplate `key` values to resources, which enables you to fully use the import and export functions within Composable Commerce.
+
+## How do I set this up?
 
 1. Clone this repository.
 2. Install the dependencies using the command:
     ```bash
     npm install
     ```
-3. Create an [API Client](https://docs.commercetools.com/getting-started/create-api-client) that can manage:
+3. Create a commercetools Composable Commerce [API Client](https://docs.commercetools.com/getting-started/create-api-client) that can manage:
     - Cart Discounts
     - Categories
     - Customers
@@ -23,13 +27,15 @@ These scripts are intended to prepare Composable Commerce Projects to use the im
     - Products
     - Standalone Prices
     - Tax Categories
-4. Download the **Environment Variables (.env)** for this API Client, rename the downloaded file `.env`, and copy it to the cloned repository.
+4. Download the **Environment Variables (.env)** for this API Client.
+5. Rename the downloaded file `.env`, and copy it to the cloned repository.
 
-
-## Available scripts
+## What scripts are available?
 
 > [!CAUTION]  
-> These scripts apply boilerplate values to resources which do not currently have a `key`. If you have a preferred format or pattern for keys, then modify the code or update the resources seperately.
+> These scripts apply boilerplate values to resources which do not currently have a `key`.
+>
+> If you have a preferred format or pattern for keys, then modify the code or update the resources seperately.
 
 The following scripts are available:
 
@@ -52,7 +58,7 @@ node queryCategoryKeys
 
 This script applies `key` values using the format: `resourceType_resourceId`. For example `categories_af206771-d70d-43e0-9e8a-2de76d8f7f94_assets_4b77be7f-ff3b-4cef-867d-09d473d335b1`. In most cases, this should result in unique keys being applied.
 
-Due to limits of Composable Commerce APIs, you must run this script multiple times if you have over `500` Categories that require keys or have Assets that require keys.
+Due to limits of Composable Commerce APIs, you must run this script multiple times if you have over `500` Categories that require keys, or have Assets that require keys.
 
 ### Query and apply keys (Products)
 
@@ -62,8 +68,6 @@ This script applies `key` values to:
 - Product Variants
 - Product Prices
 - Product Assets
-
-This includes `current` and `staged` projections.
 
 You can run the script with the following command:
 
@@ -83,10 +87,10 @@ Run the script with the following command:
 node queryKeys
 ```
 
-You will be prompted to select the resource types to query.
+You will be prompted to select the resource types to apply keys to.
 
 If the queried resource types have resources without keys, you will be prompted to apply keys to them.
 
-This script applies `key` values using the format:  `{resourceType}_{resourceId}`. For example `categories_9a265100-2997-46d4-affc-2d140efd64ae`. In 99% of cases, this should result in unique keys being applied.
+This script applies `key` values using the format:  `{resourceType}_{resourceId}`. For example `customers_9a265100-2997-46d4-affc-2d140efd64ae`. In 99% of cases, this should result in unique keys being applied.
 
 Due to limits of Composable Commerce APIs, you must run this script multiple times if you have over `500` resources of one resource type that require keys.
