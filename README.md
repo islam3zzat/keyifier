@@ -1,17 +1,14 @@
-This repository contains scripts that perform the following actions in commercetools Composable Commerce Projects:
-
-- Querying how many of your resources requires keys.
-- Applying boilerplate `key` values to resources.
+This repository contains scripts that applies boilerplate `key` values to resources.
 
 # What is this useful for?
 
-Import and export functionality in Composable Commerce uses the `key` field as identifiers for resources. If your resources do not have a `key` value, they cannot be updated via import and their references may be broken in exported files.
+Import and export functionality in Composable Commerce uses the `key` field as the identifier for resources. If your resources do not have a `key`, they cannot be updated via import and their references may be broken in exported files.
 
 As the `key` value is optional, resources within your Composable Commerce Project may lack them.
 
 These scripts apply boilerplate `key` values to resources, which enables you to fully use the import and export functions within Composable Commerce.
 
-## How do I set this up?
+# How do I set this up?
 
 1. Clone this repository.
 2. Install the dependencies using the command:
@@ -30,7 +27,7 @@ These scripts apply boilerplate `key` values to resources, which enables you to 
 4. Download the **Environment Variables (.env)** for this API Client.
 5. Rename the downloaded file `.env`, and copy it to the cloned repository.
 
-## What scripts are available?
+# What scripts are available?
 
 > [!CAUTION]  
 > These scripts apply boilerplate values to resources which do not currently have a `key`.
@@ -43,7 +40,7 @@ The following scripts are available:
 - [Query and apply keys (Products)](#query-and-apply-keys-products)
 - [Query and apply keys (other)](#query-and-apply-keys-other)
 
-### Query and apply keys (Categories)
+## Query and apply keys (Categories)
 
 This script applies `key` values to:
 
@@ -60,7 +57,7 @@ This script applies `key` values using the format: `resourceType_resourceId`. Fo
 
 Due to limits of Composable Commerce APIs, you must run this script multiple times if you have over `500` Categories that require keys, or have Assets that require keys.
 
-### Query and apply keys (Products)
+## Query and apply keys (Products)
 
 This script applies `key` values to:
 
@@ -79,7 +76,7 @@ This script applies `key` values using the format: `resourceType_resourceId`. Fo
 
 This script may take a long time to complete depending on how many Products, Product Variants, Prices, and Assets you have.
 
-### Query and apply keys (other)
+## Query and apply keys (other)
 
 Run the script with the following command:
 
