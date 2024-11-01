@@ -299,8 +299,6 @@ async function applyProductPriceKeys() {
                             // Get index of the same price in staged
                             let indexOfStagedPrice = getArrayIndex(queryResults[0].products.results[i].masterData.staged.masterVariant.prices, queryResults[0].products.results[i].masterData.current.masterVariant.prices[ii].id);
 
-                            console.log(indexOfStagedPrice)
-
                             if (indexOfStagedPrice === -1) {
                                 throw new Error("Unable to find matching Price in staged.");
                             }
@@ -350,11 +348,14 @@ async function applyProductPriceKeys() {
 
     // Other variant updates
 
-    // Reset counter
+    // Reset counter and updates array
     count = 500;
-    /*do {
+
+    // Variant updates
+    do {
         try {
-            // Get all Products where Variants are present but their key is not defined
+
+            // Get all products that have a "null" Price key within the Variants' Prices
             const queryResults = await makeAPIRequests([{
                 url: `${CTP_API_URL}/${CTP_PROJECT_KEY}/graphql`,
                 options: {
@@ -364,78 +365,57 @@ async function applyProductPriceKeys() {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        query: `products(limit: 500, where: "masterData(current(variants(prices is not empty and prices(key is not defined))))") {
-    total
-    count
-    results {
-      id
-      version
-      key
-      masterData {
-        current {
-          masterVariant {
-            prices{
-              id
-              key
-            }
-          }
-          variants {
-            prices{
-              id
-              key
-            }
-          }
-        }
-        staged {
-          masterVariant {
-            prices{
-              id
-              key
-            }
-          }
-          variants {
-            prices{
-              id
-              key
-            }
-          }
-        }
-      }
-    }
-  }
-}`
+                        query: `{  products(limit: 500, where: "masterData(current(variants(prices is not empty and prices(key is not defined))))") { total count results { id version key masterData { current { variants { prices { id key} } } staged  {variants { prices { id key } } } } }  }}`
                     })
                 }
             }])
 
-            // Update the counter
+            // Update the counter            
             count = queryResults[0].products.count;
 
+            // Create updates array
             let updates = new Array(queryResults[0].products.results.length);
 
             // Update keys
             if (count > 0) {
 
+                // Loop through products
                 for (let i = 0; i < queryResults[0].products.results.length; i++) {
 
-                    // TODO: For now I am not implementing the key updater if the number of Variants differs between current and staged
-                    if (queryResults[0].products.results[i].masterData.current.variants.length === queryResults[0].products.results[i].masterData.current.variants.length) {
+                    updates[i] = "";
 
-                        for (let ii = 0; ii < queryResults[0].products.results[i].masterData.current.variants.length; ii++) {
-                            let newVariantKey = queryResults[0].products.results[i].masterData.current.variants[ii].key === null ? queryResults[0].products.results[i].masterData.staged.variants[ii].key : queryResults[0].products.results[i].masterData.current.variants[ii].key;
+                    for (let v = 0; v < queryResults[0].products.results[i].masterData.current.variants.length; v++) {
+                        // Only update the price keys if they're identical
+                        if (queryResults[0].products.results[i].masterData.current.variants[v].prices.length === queryResults[0].products.results[i].masterData.staged.variants[v].prices.length) {
 
-                            if (newVariantKey === null) {
-                                newVariantKey = queryResults[0].products.results[i].masterData.current.variants[ii].sku === null ? queryResults[0].products.results[i].masterData.staged.variants[ii].sku : queryResults[0].products.results[i].masterData.current.variants[ii].sku;
-                                if (newVariantKey === null) {
-                                    newVariantKey = `products_${queryResults[0].products.results[i].id}_variants_${queryResults[0].products.results[i].masterData.current.variants[ii].id}`;
+                            for (let ii = 0; ii < queryResults[0].products.results[i].masterData.current.variants[v].prices.length; ii++) {
+
+                                // Get index of the same price in staged
+                                let indexOfStagedPrice = getArrayIndex(queryResults[0].products.results[i].masterData.staged.variants[v].prices, queryResults[0].products.results[i].masterData.current.variants[v].prices[ii].id);
+
+
+
+                                if (indexOfStagedPrice === -1) {
+                                    throw new Error("Unable to find matching Price in staged.");
                                 }
 
-                                updates[i] += ` { setProductVariantKey: { variantId: ${queryResults[0].products.results[i].masterData.current.variants[ii].id}, key: "${newVariantKey}" staged: false } }`
+                                let newPriceKey = queryResults[0].products.results[i].masterData.current.variants[v].prices[ii].key;
+
+                                if (newPriceKey === null) {
+                                    newPriceKey = queryResults[0].products.results[i].masterData.staged.variants[v].prices[indexOfStagedPrice].key;
+                                }
+
+                                if (newPriceKey === null) {
+                                    newPriceKey = `products_${queryResults[0].products.results[i].id}_prices_${queryResults[0].products.results[i].masterData.current.variants[v].prices[ii].id}`;
+                                }
+
+                                updates[i] += ` { setPriceKey: { priceId: "${queryResults[0].products.results[i].masterData.current.variants[v].prices[ii].id}", key: "${newPriceKey}" staged: false } }`
                             }
+
                         }
-                    }
-                    else {
-                        console.log(`Product: ${queryResults[0].products.results[i].id}. The number of Variants differs between current and staged projections. You must update their keys manually.`)
+                        else {
+                            console.log(`Product: ${queryResults[0].products.results[i].id}. The number of Variant Prices differs between current and staged projections. You must update their Price keys manually.`)
+                        }
                     }
                 }
 
@@ -452,14 +432,13 @@ async function applyProductPriceKeys() {
                         })
                     }
                 }));
-
                 await makeAPIRequests(updateCalls);
             }
         }
         catch (error) {
             console.error('❌  An error occurred: ', error);
         }
-    } while (count > 0)*/
+    } while (count > 0)
 
     console.log("Finished applying keys to Prices in other Variants.")
 }
