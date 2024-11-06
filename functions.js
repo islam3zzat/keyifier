@@ -18,15 +18,38 @@ export async function getBearerToken() {
         });
 
         if (!response.ok) {
-            console.log(response)
             throw new Error(`❌  HTTP error! status: ${response.status}`);
         }
 
-        console.log("✔️  Got bearer token.");
+        console.log("✔️  Received bearer token.");
         const data = await response.json();
         return data.access_token;
     } catch (error) {
-        throw new Error(`❌  Error getting bearer token:\n ${error}`);
+        throw new Error(`❌  Error retrieving bearer token:\n ${error}`);
+    }
+}
+
+export async function revokeBearerToken(bearerToken) {
+    try {
+        const response = await fetch(`${CTP_AUTH_URL}/oauth/token/revoke`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${btoa(CTP_CLIENT_ID + ":" + CTP_CLIENT_SECRET)}`,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: new URLSearchParams({
+                token: bearerToken
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`❌  HTTP error! status: ${response.status}`);
+        }
+        else {
+            console.log("✔️  Revoked bearer token.");
+        }
+    } catch (error) {
+        throw new Error(`❌  Error revoking bearer token:\n ${error}`);
     }
 }
 
