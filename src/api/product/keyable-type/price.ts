@@ -1,6 +1,6 @@
 import { Price, Product, ProductVariant } from "@commercetools/platform-sdk";
-import { existWithoutKeyPredicate, keylessPredicate } from "./predicate";
-import { splitActions } from "../../utils/split-actions";
+import { existWithoutKeyPredicate, keylessPredicate } from "../predicate";
+import { splitActions } from "../../../utils/split-actions";
 
 export const keylessPricesPredicate = `
   masterData(
@@ -34,7 +34,12 @@ export const pricesQuery = `query ProductPricesQuery($predicate: String!) {
 }
 `;
 
-export const productToPriceIds = (product: Product) => {
+export const getNextPriceKey = (productId: string, priceId: string) => {
+  const prefix = "price";
+  return `${prefix}_${productId}_${priceId}`;
+};
+
+const productToPriceIds = (product: Product) => {
   // @ts-expect-error allVariants is not in the type definition
   const variants: ProductVariant[] = product.masterData.staged.allVariants;
 
@@ -49,12 +54,7 @@ export const productToPriceIds = (product: Product) => {
   }, []);
 };
 
-export const getNextPriceKey = (productId: string, priceId: string) => {
-  const prefix = "price";
-  return `${prefix}_${productId}_${priceId}`;
-};
-
-export const getPriceActions = (productId: string, priceIds: string[]) => {
+const getPriceActions = (productId: string, priceIds: string[]) => {
   const actions = priceIds.map((priceId) => {
     const key = getNextPriceKey(productId, priceId);
 
@@ -67,4 +67,10 @@ export const getPriceActions = (productId: string, priceIds: string[]) => {
   });
 
   return splitActions(actions);
+};
+
+export const priceToActionBatches = (product: Product) => {
+  const priceIds = productToPriceIds(product);
+
+  return getPriceActions(product.id, priceIds);
 };

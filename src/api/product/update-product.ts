@@ -2,10 +2,7 @@ import { Product, ProductUpdateAction } from "@commercetools/platform-sdk";
 import { graphQlRequest } from "../graphql";
 import { version } from "yargs";
 import { waitForNextRequest } from "../../utils/fairness";
-import { getProductActions } from "./product";
-import { getVariantActions, productToVariantIds } from "./variant";
-import { getPriceActions, productToPriceIds } from "./price";
-import { getAssetActions, productToAssetIds } from "./asset";
+import { ProductKeyableType, keyableTypeToUpdateOptions } from "./keyable-type";
 
 const updateProductMutation = `mutation UpdateProduct(
   $id: String
@@ -42,42 +39,23 @@ const executeUpdateActions = async ({
   }
 };
 
-export const setProductKey = (product: Product) => {
-  const { id, version } = product;
-  const actionBatches = getProductActions(id);
+export const setProductFieldKey = (keyableType: ProductKeyableType) => {
+  const { getActionBatches } = keyableTypeToUpdateOptions[keyableType];
 
-  return executeUpdateActions({ id, version, actionBatches });
-};
+  const setKey = async (product: Product) => {
+    const { id, version } = product;
 
-export const setProductVariantsKeys = async (product: Product) => {
-  const { id, version } = product;
-  const variantIds = productToVariantIds(product);
+    const actionBatches = getActionBatches(product);
 
-  const actionBatches = getVariantActions(id, variantIds);
+    await executeUpdateActions({ id, version, actionBatches });
 
-  await executeUpdateActions({ id, version, actionBatches });
+    const totalActions = actionBatches.reduce(
+      (acc, actions) => acc + actions.length,
+      0
+    );
 
-  return variantIds.length;
-};
+    return totalActions;
+  };
 
-export const setProductPricesKeys = async (product: Product) => {
-  const { id, version } = product;
-  const priceIds = productToPriceIds(product);
-
-  const actionBatches = getPriceActions(id, priceIds);
-
-  await executeUpdateActions({ id, version, actionBatches });
-
-  return priceIds.length;
-};
-
-export const setProductAssetsKeys = async (product: Product) => {
-  const { id, version } = product;
-  const variantAssets = productToAssetIds(product);
-
-  const actionBatches = getAssetActions(id, variantAssets);
-
-  await executeUpdateActions({ id, version, actionBatches });
-
-  return variantAssets.length;
+  return setKey;
 };

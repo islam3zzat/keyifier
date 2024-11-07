@@ -1,6 +1,6 @@
 import { Asset, Product, ProductVariant } from "@commercetools/platform-sdk";
-import { existWithoutKeyPredicate, keylessPredicate } from "./predicate";
-import { splitActions } from "../../utils/split-actions";
+import { existWithoutKeyPredicate, keylessPredicate } from "../predicate";
+import { splitActions } from "../../../utils/split-actions";
 
 export const keylessAssetsPredicate = `
   masterData(
@@ -38,7 +38,12 @@ type VariantAsset = {
   variantId: number;
   assetId: string;
 };
-export const productToAssetIds = (product: Product) => {
+export const getNextAssetKey = (productId: string, assetId: string) => {
+  const prefix = "asset";
+  return `${prefix}_${productId}_${assetId}`;
+};
+
+const productToVariantAssets = (product: Product) => {
   // @ts-expect-error allVariants is not in the type definition
   const variants: ProductVariant[] = product.masterData.staged.allVariants;
 
@@ -59,15 +64,7 @@ export const productToAssetIds = (product: Product) => {
   );
 };
 
-export const getNextAssetKey = (productId: string, assetId: string) => {
-  const prefix = "asset";
-  return `${prefix}_${productId}_${assetId}`;
-};
-
-export const getAssetActions = (
-  productId: string,
-  variantAssets: VariantAsset[]
-) => {
+const getAssetActions = (productId: string, variantAssets: VariantAsset[]) => {
   const actions = variantAssets.map(({ assetId, variantId }) => {
     const key = getNextAssetKey(productId, assetId);
 
@@ -81,4 +78,10 @@ export const getAssetActions = (
   });
 
   return splitActions(actions);
+};
+
+export const assetToActionBatches = (product: Product) => {
+  const variantAssets = productToVariantAssets(product);
+
+  return getAssetActions(product.id, variantAssets);
 };

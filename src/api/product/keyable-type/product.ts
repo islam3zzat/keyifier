@@ -1,4 +1,5 @@
-import { keylessPredicate } from "./predicate";
+import { Product } from "@commercetools/platform-sdk";
+import { keylessPredicate } from "../predicate";
 
 export const keylessProductsPredicate = keylessPredicate;
 
@@ -18,7 +19,7 @@ export const getNextProductKey = (id: string) => {
   return `${prefix}_${id}`;
 };
 
-export const getProductActions = (id: string) => {
+const getProductActions = (id: string) => {
   const key = getNextProductKey(id);
   const actions = [
     {
@@ -29,4 +30,8 @@ export const getProductActions = (id: string) => {
   ];
 
   return [actions];
+};
+
+export const productToActionBatches = (product: Product) => {
+  return getProductActions(product.id);
 };
