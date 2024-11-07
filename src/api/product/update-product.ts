@@ -73,11 +73,11 @@ export const setProductPricesKeys = async (product: Product) => {
 
 export const setProductAssetsKeys = async (product: Product) => {
   const { id, version } = product;
-  const assetIds = productToAssetIds(product);
+  const variantAssets = productToAssetIds(product);
 
-  const actionBatches = getAssetActions(id, assetIds);
+  const actionBatches = getAssetActions(id, variantAssets);
 
   await executeUpdateActions({ id, version, actionBatches });
 
-  return assetIds.length;
+  return variantAssets.length;
 };

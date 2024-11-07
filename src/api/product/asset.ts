@@ -34,19 +34,29 @@ export const assetsQuery = `query ProductAssetsQuery($predicate: String!) {
 }
 `;
 
+type VariantAsset = {
+  variantId: number;
+  assetId: string;
+};
 export const productToAssetIds = (product: Product) => {
   // @ts-expect-error allVariants is not in the type definition
   const variants: ProductVariant[] = product.masterData.staged.allVariants;
 
-  return variants.reduce((assetIds: string[], variant: ProductVariant) => {
-    const ids = (variant.assets || [])
-      .filter(
-        (asset) => !asset.key // we only want assets without a key
-      )
-      .map((asset: Asset) => asset.id);
+  return variants.reduce(
+    (acc: Array<VariantAsset>, variant: ProductVariant) => {
+      const variantAssets = (variant.assets || [])
+        .filter(
+          (asset) => !asset.key // we only want assets without a key
+        )
+        .map((asset: Asset) => ({
+          variantId: variant.id,
+          assetId: asset.id,
+        }));
 
-    return assetIds.concat(ids);
-  }, []);
+      return acc.concat(variantAssets);
+    },
+    []
+  );
 };
 
 export const getNextAssetKey = (productId: string, assetId: string) => {
@@ -54,13 +64,17 @@ export const getNextAssetKey = (productId: string, assetId: string) => {
   return `${prefix}_${productId}_${assetId}`;
 };
 
-export const getAssetActions = (productId: string, assetIds: string[]) => {
-  const actions = assetIds.map((assetId) => {
+export const getAssetActions = (
+  productId: string,
+  variantAssets: VariantAsset[]
+) => {
+  const actions = variantAssets.map(({ assetId, variantId }) => {
     const key = getNextAssetKey(productId, assetId);
 
     return {
       setAssetKey: {
         assetId,
+        variantId,
         key,
       },
     };
