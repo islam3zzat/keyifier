@@ -55,8 +55,6 @@ node queryCategoryKeys
 
 This script applies `key` values using the format: `resourceType_resourceId`. For example `categories_af206771-d70d-43e0-9e8a-2de76d8f7f94_assets_4b77be7f-ff3b-4cef-867d-09d473d335b1`. In most cases, this should result in unique keys being applied.
 
-Due to limits of Composable Commerce APIs, you must run this script multiple times if you have over `500` Categories that require keys, or have Assets that require keys.
-
 ## Query and apply keys (Products)
 
 This script applies `key` values to:
@@ -89,5 +87,3 @@ You will be prompted to select the resource types to apply keys to.
 If the queried resource types have resources without keys, you will be prompted to apply keys to them.
 
 This script applies `key` values using the format:  `{resourceType}_{resourceId}`. For example `customers_9a265100-2997-46d4-affc-2d140efd64ae`. In 99% of cases, this should result in unique keys being applied.
-
-Due to limits of Composable Commerce APIs, you must run this script multiple times if you have over `500` resources of one resource type that require keys.
