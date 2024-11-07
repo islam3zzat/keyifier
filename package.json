@@ -4,14 +4,26 @@
   "version": "1.0.0",
   "description": "Applies keys to commercetools resources to support the new CSV import/export process.",
   "main": "index.js",
+  "module": "esm",
   "scripts": {
-    "start": "node main"
+    "start": "node dist/main.js",
+    "build": "tsc",
+    "dev": "tsx src/api/product/fetch-products.ts"
   },
   "author": "Stephen Armstrong",
   "license": "MIT",
   "dependencies": {
+    "@commercetools/platform-sdk": "^7.19.0",
+    "@commercetools/ts-client": "^2.1.1",
     "dotenv": "^16.4.5",
-    "inquirer": "^12.0.0",
+    "inquirer": "^12.0.1",
+    "node-fetch": "^3.3.2",
+    "tsx": "^4.19.2",
     "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.7",
+    "@types/node-fetch": "^2.6.11",
+    "@types/yargs": "^17.0.33"
   }
 }
