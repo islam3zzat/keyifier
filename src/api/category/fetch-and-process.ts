@@ -13,14 +13,13 @@ const createCategoryFetchAnProcess = (type: CategoryKeyableSubtype) => {
     processed: 0,
   };
 
-  const intervalId = startPeriodicReporting(progress, 5_000);
+  startPeriodicReporting(progress, 5_000);
 
   const fetchAndProcess = async (lastId?: string) => {
     const [error, body] = await fetcher(lastId);
 
     if (error) {
       logger.error(`Error fetching ${type}:`, error, { destination: "all" });
-      clearInterval(intervalId);
 
       return;
     }
@@ -30,7 +29,6 @@ const createCategoryFetchAnProcess = (type: CategoryKeyableSubtype) => {
 
     if (!lastCategory) {
       logger.info(`All ${type} have been processed`, { destination: "all" });
-      clearInterval(intervalId);
 
       return;
     }
