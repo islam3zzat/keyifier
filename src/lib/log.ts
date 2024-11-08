@@ -50,11 +50,10 @@ export const startPeriodicReporting = (
   progress: { processed: number },
   interval: number
 ) => {
-  const intervalId = setInterval(() => {
-    logger.info(`Processed ${progress.processed} resources so far.`, {
-      destination: "console",
-    });
-  }, interval);
-
-  return intervalId;
+  //   const intervalId = setInterval(() => {
+  //     logger.info(`Processed ${progress.processed} resources so far.`, {
+  //       destination: "console",
+  //     });
+  //   }, interval);
+  //   return intervalId;
 };
