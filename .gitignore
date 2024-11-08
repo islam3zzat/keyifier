@@ -33,3 +33,4 @@ build
 composer.lock
 tmpdoc
 gen.properties
+dist/
