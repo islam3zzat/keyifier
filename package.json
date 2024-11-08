@@ -3,12 +3,11 @@
   "type": "module",
   "version": "1.0.0",
   "description": "Applies keys to commercetools resources to support the new CSV import/export process.",
-  "main": "index.js",
-  "module": "esm",
+  "main": "dist/main.js",
   "scripts": {
     "start": "node dist/main.js",
     "build": "tsc",
-    "dev": "tsx src/api/product/fetch-products.ts"
+    "dev": "tsx src/main.ts"
   },
   "author": "Stephen Armstrong",
   "license": "MIT",

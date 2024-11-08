@@ -1,17 +1,17 @@
-import { Product } from "@commercetools/platform-sdk";
+import { Category } from "@commercetools/platform-sdk";
 import { graphQlRequest } from "../graphql.js";
 import { waitForNextRequest } from "../../utils/fairness.js";
 import {
-  ProductKeyableSubtype,
+  CategoryKeyableSubtype,
   keyableTypeToUpdateOptions,
 } from "./keyable-type/index.js";
 
-const updateProductMutation = `mutation UpdateProduct(
+const updateCategoryMutation = `mutation UpdateCategory(
   $id: String
   $version: Long!
-  $actions: [ProductUpdateAction!]!
+  $actions: [CategoryUpdateAction!]!
 ) {
-  updateProduct(id: $id, version: $version, actions: $actions) {
+  updateCategory(id: $id, version: $version, actions: $actions) {
     id
     version
   }
@@ -31,7 +31,7 @@ const executeUpdateActions = async ({
   for (const actions of actionBatches) {
     const variables = { id, version: version + actionsApplied, actions };
     const res = await graphQlRequest({
-      query: updateProductMutation,
+      query: updateCategoryMutation,
       variables,
     });
 
@@ -41,13 +41,13 @@ const executeUpdateActions = async ({
   }
 };
 
-export const setProductFieldKey = (keyableType: ProductKeyableSubtype) => {
+export const setCategoryFieldKey = (keyableType: CategoryKeyableSubtype) => {
   const { getActionBatches } = keyableTypeToUpdateOptions[keyableType];
 
-  const setKey = async (product: Product) => {
-    const { id, version } = product;
+  const setKey = async (category: Category) => {
+    const { id, version } = category;
 
-    const actionBatches = getActionBatches(product);
+    const actionBatches = getActionBatches(category);
 
     await executeUpdateActions({ id, version, actionBatches });
 

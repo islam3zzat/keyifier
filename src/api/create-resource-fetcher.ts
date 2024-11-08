@@ -1,4 +1,4 @@
-import { graphQlRequest } from "./graphql";
+import { graphQlRequest } from "./graphql.js";
 
 export const createResourceFetcher = ({
   query,
@@ -26,7 +26,7 @@ export const createResourceFetcher = ({
       return [errors, null];
     }
 
-    return [null, data.products];
+    return [null, data];
   };
 
   return fetchResource;

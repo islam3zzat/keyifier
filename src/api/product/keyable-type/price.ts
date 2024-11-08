@@ -1,6 +1,6 @@
 import { Price, Product, ProductVariant } from "@commercetools/platform-sdk";
-import { existWithoutKeyPredicate, keylessPredicate } from "../predicate";
-import { splitActions } from "../../../utils/split-actions";
+import { existWithoutKeyPredicate } from "../../resource/predicate.js";
+import { splitActions } from "../../../utils/split-actions.js";
 
 export const keylessPricesPredicate = `
   masterData(
