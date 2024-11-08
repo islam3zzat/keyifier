@@ -8,7 +8,11 @@ import {
   pricesQuery,
   priceToActionBatches,
 } from "./price";
-import { keylessProductsPredicate, productsQuery } from "./product";
+import {
+  keylessProductsPredicate,
+  productsQuery,
+  productToActionBatches,
+} from "./product";
 import {
   keylessVariantsPredicate,
   variantsQuery,
@@ -43,7 +47,7 @@ export const keyableTypeToQuery = {
 
 export const keyableTypeToUpdateOptions = {
   [ProductKeyableType.Product]: {
-    getActionBatches: assetToActionBatches,
+    getActionBatches: productToActionBatches,
   },
   [ProductKeyableType.Variant]: {
     getActionBatches: variantToActionBatches,

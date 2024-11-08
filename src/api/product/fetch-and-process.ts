@@ -33,6 +33,8 @@ export const createProductFetchAnProcess = (type: ProductKeyableType) => {
 
       await waitForNextRequest();
     }
+
+    fetchAndProcess(lastProduct.id);
   };
 
   return fetchAndProcess;
