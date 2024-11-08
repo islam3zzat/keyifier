@@ -1,5 +1,5 @@
 import { Product } from "@commercetools/platform-sdk";
-import { keylessPredicate } from "../predicate";
+import { keylessPredicate } from "../../resource/predicate.js";
 
 export const keylessProductsPredicate = keylessPredicate;
 

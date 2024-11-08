@@ -1,10 +1,10 @@
 import { Product } from "@commercetools/platform-sdk";
-import { waitForNextRequest } from "../../utils/fairness";
-import { fetchWithMissingKey } from "./fetch-products";
-import { setProductFieldKey } from "./update-product";
-import { ProductKeyableType } from "./keyable-type";
+import { waitForNextRequest } from "../../utils/fairness.js";
+import { fetchWithMissingKey } from "./fetch-products.js";
+import { setProductFieldKey } from "./update-product.js";
+import { ProductKeyableSubtype } from "./keyable-type/index.js";
 
-export const createProductFetchAnProcess = (type: ProductKeyableType) => {
+const createProductFetchAnProcess = (type: ProductKeyableSubtype) => {
   const fetcher = fetchWithMissingKey(type);
   const updater = setProductFieldKey(type);
 
@@ -16,7 +16,7 @@ export const createProductFetchAnProcess = (type: ProductKeyableType) => {
       return;
     }
 
-    const products: Product[] = body.results;
+    const products: Product[] = body.products.results;
     const lastProduct = products[products.length - 1];
 
     if (!lastProduct) {
@@ -39,3 +39,19 @@ export const createProductFetchAnProcess = (type: ProductKeyableType) => {
 
   return fetchAndProcess;
 };
+
+export const fetchAndProcessProductKeys = createProductFetchAnProcess(
+  ProductKeyableSubtype.Product
+);
+
+export const fetchAndProcessProductVariantKeys = createProductFetchAnProcess(
+  ProductKeyableSubtype.Variant
+);
+
+export const fetchAndProcessProductPriceKeys = createProductFetchAnProcess(
+  ProductKeyableSubtype.Price
+);
+
+export const fetchAndProcessProductAssetKeys = createProductFetchAnProcess(
+  ProductKeyableSubtype.Asset
+);

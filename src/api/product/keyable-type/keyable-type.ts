@@ -2,24 +2,24 @@ import {
   assetsQuery,
   assetToActionBatches,
   keylessAssetsPredicate,
-} from "./asset";
+} from "./asset.js";
 import {
   keylessPricesPredicate,
   pricesQuery,
   priceToActionBatches,
-} from "./price";
+} from "./price.js";
 import {
   keylessProductsPredicate,
   productsQuery,
   productToActionBatches,
-} from "./product";
+} from "./product.js";
 import {
   keylessVariantsPredicate,
   variantsQuery,
   variantToActionBatches,
-} from "./variant";
+} from "./variant.js";
 
-export enum ProductKeyableType {
+export enum ProductKeyableSubtype {
   Product = "product",
   Variant = "variant",
   Price = "price",
@@ -27,35 +27,35 @@ export enum ProductKeyableType {
 }
 
 export const keyableTypeToQuery = {
-  [ProductKeyableType.Product]: {
+  [ProductKeyableSubtype.Product]: {
     query: productsQuery,
     predicate: keylessProductsPredicate,
   },
-  [ProductKeyableType.Variant]: {
+  [ProductKeyableSubtype.Variant]: {
     query: variantsQuery,
     predicate: keylessVariantsPredicate,
   },
-  [ProductKeyableType.Asset]: {
+  [ProductKeyableSubtype.Asset]: {
     query: assetsQuery,
     predicate: keylessAssetsPredicate,
   },
-  [ProductKeyableType.Price]: {
+  [ProductKeyableSubtype.Price]: {
     query: pricesQuery,
     predicate: keylessPricesPredicate,
   },
 };
 
 export const keyableTypeToUpdateOptions = {
-  [ProductKeyableType.Product]: {
+  [ProductKeyableSubtype.Product]: {
     getActionBatches: productToActionBatches,
   },
-  [ProductKeyableType.Variant]: {
+  [ProductKeyableSubtype.Variant]: {
     getActionBatches: variantToActionBatches,
   },
-  [ProductKeyableType.Price]: {
+  [ProductKeyableSubtype.Price]: {
     getActionBatches: priceToActionBatches,
   },
-  [ProductKeyableType.Asset]: {
+  [ProductKeyableSubtype.Asset]: {
     getActionBatches: assetToActionBatches,
   },
 };

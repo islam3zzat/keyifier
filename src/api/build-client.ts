@@ -3,16 +3,12 @@ import { fileURLToPath } from "url";
 import fetch from "node-fetch";
 import {
   ClientBuilder,
-
   // Import middlewares
-  type AuthMiddlewareOptions, // Required for auth
-  type HttpMiddlewareOptions, // Required for sending HTTP requests
+  type AuthMiddlewareOptions,
+  type HttpMiddlewareOptions,
 } from "@commercetools/ts-client";
 import "dotenv/config";
-import { getOrFail } from "../utils/env";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { getOrFail } from "../utils/env.js";
 
 // Environment variables
 const clientSecret = getOrFail("CTP_CLIENT_SECRET");

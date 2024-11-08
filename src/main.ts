@@ -15,9 +15,7 @@ async function main() {
   const prompter = new Prompter();
 
   try {
-    const rootAction = await getUserAction(prompter, argv);
-
-    await prompter.handleAction(rootAction);
+    await getUserAction(prompter, argv);
   } catch (error) {
     console.error("Error:", error);
   }

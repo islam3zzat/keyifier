@@ -1,22 +1,7 @@
 import inquirer from "inquirer";
-import {
-  applyProductKeys,
-  applyProductVariantKeys,
-  applyProductPriceKeys,
-  applyProductAssetKeys,
-} from "./queryProductKeys.js";
-import { endpoints, returnSentenceCasedString } from "./queryKeys.js";
-import { resourceTypes, applyCategoryKeys } from "./queryCategoryKeys.js";
+import { promptChoicesMap, PromptOption } from "./prompt-choices.js";
 
 export class Prompter {
-  constructor() {
-    this.actionCallbacks = {
-      productKeys: this.handleProductKeys.bind(this),
-      otherKeys: this.handleQueryKeys.bind(this),
-      categoryKeys: this.handleQueryCategoryKeys.bind(this),
-    };
-  }
-
   async getUserAction() {
     const { rootActionPrompt } = await inquirer.prompt([
       {
@@ -30,60 +15,29 @@ export class Prompter {
         ],
       },
     ]);
-    return rootActionPrompt;
+    await this.handleAction(rootActionPrompt);
   }
 
-  async promptForResourceSelection(keysNeededForTheseResources) {
-    const updateAnswers = await inquirer.prompt([
-      {
-        type: keysNeededForTheseResources.length === 1 ? "list" : "checkbox",
-        name: "resourcesToUpdate",
-        message: "Select the resources to apply keys to:",
-        choices: keysNeededForTheseResources.map(
-          (index) => resourceTypes[index]
-        ),
-      },
-    ]);
-
-    return Array.isArray(updateAnswers.resourcesToUpdate)
-      ? updateAnswers.resourcesToUpdate.map((choice) =>
-          resourceTypes.indexOf(choice)
-        )
-      : [resourceTypes.indexOf(updateAnswers.resourcesToUpdate)];
-  }
-
-  async handleProductKeys() {
+  async handleUserSelection(promptOptions: PromptOption[]) {
     try {
       const { selectAction } = await inquirer.prompt([
         {
           type: "list",
           name: "selectAction",
-          message: "Select the product resource action to perform:",
-          choices: [
-            "Apply keys to Products",
-            "Apply keys to Product Variants",
-            "Apply keys to Product Prices",
-            "Apply keys to Product Assets",
-          ],
+          message: "Select the action to perform:",
+          choices: promptOptions.map((action) => action.choice),
         },
       ]);
 
-      switch (selectAction) {
-        case "Apply keys to Products":
-          await applyProductKeys();
-          break;
-        case "Apply keys to Product Variants":
-          await applyProductVariantKeys();
-          break;
-        case "Apply keys to Product Prices":
-          await applyProductPriceKeys();
-          break;
-        case "Apply keys to Product Assets":
-          await applyProductAssetKeys();
-          break;
-        default:
-          console.log("No valid product action selected.");
+      const userSelection = promptOptions.find(
+        (action) => action.choice === selectAction
+      );
+      if (!userSelection) {
+        console.log("No valid action selected.");
+        return;
       }
+
+      await userSelection.action();
     } catch (error) {
       handleUserExit(error);
 
@@ -91,54 +45,18 @@ export class Prompter {
     }
   }
 
-  async handleQueryKeys() {
-    try {
-      const { selectedEndpoints } = await inquirer.prompt([
-        {
-          type: "checkbox",
-          name: "selectedEndpoints",
-          message: "Select the resource types to query:",
-          choices: endpoints.map(returnSentenceCasedString),
-        },
-      ]);
-      console.log("Querying selected endpoints:", selectedEndpoints);
-    } catch (error) {
-      handleUserExit(error);
+  async handleAction(action: string) {
+    const promptChoices = promptChoicesMap[action];
 
-      console.error("Error:", error);
-    }
-  }
-
-  async handleQueryCategoryKeys() {
-    try {
-      const { selectedResource } = await inquirer.prompt([
-        {
-          type: "checkbox",
-          name: "selectedResource",
-          message: "Select the resource types to query:",
-          choices: resourceTypes,
-        },
-      ]);
-      console.log("Querying selected resources:", selectedResource);
-      await applyCategoryKeys(selectedResource);
-    } catch (error) {
-      handleUserExit(error);
-
-      console.error("Error:", error);
-    }
-  }
-
-  async handleAction(action) {
-    const actionCallback = this.actionCallbacks[action];
-    if (actionCallback) {
-      await actionCallback();
-    } else {
+    if (!promptChoices) {
       console.log("No valid action selected.");
+      return;
     }
+    await this.handleUserSelection(promptChoices);
   }
 }
 
-function handleUserExit(error) {
+function handleUserExit(error: any) {
   if (error.name !== "ExitPromptError") {
     return;
   }
