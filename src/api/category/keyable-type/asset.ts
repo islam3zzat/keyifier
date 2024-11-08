@@ -1,6 +1,6 @@
 import { Category } from "@commercetools/platform-sdk";
 import { existWithoutKeyPredicate } from "../../resource/predicate.js";
-import { splitActions } from "../../../utils/split-actions.js";
+import { splitArray } from "../../../utils/split-actions.js";
 
 export const keylessAssetsPredicate = `assets(${existWithoutKeyPredicate})`;
 
@@ -42,7 +42,7 @@ const getAssetActions = (categoryId: string, assetIds: string[]) => {
     };
   });
 
-  return splitActions(actions);
+  return splitArray(actions);
 };
 
 export const assetToActionBatches = (category: Category) => {

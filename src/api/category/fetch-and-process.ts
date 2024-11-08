@@ -40,8 +40,6 @@ const createCategoryFetchAnProcess = (type: CategoryKeyableSubtype) => {
       logger.info(`Processed ${progress.processed} ${type}`, {
         destination: "file",
       });
-
-      await waitForNextRequest();
     }
 
     fetchAndProcess(lastCategory.id);

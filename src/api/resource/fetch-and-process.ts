@@ -5,7 +5,7 @@ import {
   KeyableResourceType,
   resourceToQueryFields,
 } from "./keyable-type/index.js";
-import { logger } from "../../lib/log.js";
+import { logger, startPeriodicReporting } from "../../lib/log.js";
 
 type Resource = {
   id: string;
@@ -17,7 +17,11 @@ const createResourceFetchAnProcess = (type: KeyableResourceType) => {
   const updater = createUpdater(type);
   const { queryField } = resourceToQueryFields(type);
 
-  let processed = 0;
+  const progress = {
+    processed: 0,
+  };
+
+  startPeriodicReporting(progress, 5_000);
 
   const fetchAndProcess = async (lastId?: string) => {
     const [error, body] = await fetcher(lastId);
@@ -40,10 +44,10 @@ const createResourceFetchAnProcess = (type: KeyableResourceType) => {
     for (const resource of resources) {
       const updatedResources = await updater(resource);
 
-      processed += updatedResources;
-      logger.info(`Processed ${processed} ${type}`, { destination: "file" });
-
-      await waitForNextRequest();
+      progress.processed += updatedResources;
+      logger.info(`Processed ${progress.processed} ${type}`, {
+        destination: "file",
+      });
     }
 
     fetchAndProcess(lastResource.id);

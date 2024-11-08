@@ -1,6 +1,6 @@
 import { Asset, Product, ProductVariant } from "@commercetools/platform-sdk";
 import { existWithoutKeyPredicate } from "../../resource/predicate.js";
-import { splitActions } from "../../../utils/split-actions.js";
+import { splitArray } from "../../../utils/split-actions.js";
 
 export const keylessAssetsPredicate = `
   masterData(
@@ -77,7 +77,7 @@ const getAssetActions = (productId: string, variantAssets: VariantAsset[]) => {
     };
   });
 
-  return splitActions(actions);
+  return splitArray(actions);
 };
 
 export const assetToActionBatches = (product: Product) => {

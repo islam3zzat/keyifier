@@ -1,6 +1,6 @@
 import { Product, ProductVariant } from "@commercetools/platform-sdk";
 import { existWithoutKeyPredicate } from "../../resource/predicate.js";
-import { splitActions } from "../../../utils/split-actions.js";
+import { splitArray } from "../../../utils/split-actions.js";
 
 export const keylessVariantsPredicate = `
   masterData(
@@ -56,7 +56,7 @@ const getVariantActions = (productId: string, variantIds: number[]) => {
     };
   });
 
-  return splitActions(actions);
+  return splitArray(actions);
 };
 
 export const variantToActionBatches = (product: Product) => {
