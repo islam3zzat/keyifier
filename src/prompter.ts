@@ -1,5 +1,6 @@
 import inquirer from "inquirer";
 import { promptChoicesMap, PromptOption } from "./prompt-choices.js";
+import { logger } from "./lib/log.js";
 
 export class Prompter {
   async getUserAction() {
@@ -33,15 +34,15 @@ export class Prompter {
         (action) => action.choice === selectAction
       );
       if (!userSelection) {
-        console.log("No valid action selected.");
+        logger.info("No valid action selected.", { destination: "console" });
         return;
       }
 
       await userSelection.action();
-    } catch (error) {
+    } catch (error: any) {
       handleUserExit(error);
 
-      console.error("Error:", error);
+      logger.error(error, { destination: "console" });
     }
   }
 
@@ -49,7 +50,8 @@ export class Prompter {
     const promptChoices = promptChoicesMap[action];
 
     if (!promptChoices) {
-      console.log("No valid action selected.");
+      logger.info("No valid action selected.", { destination: "console" });
+
       return;
     }
     await this.handleUserSelection(promptChoices);
@@ -61,6 +63,7 @@ function handleUserExit(error: any) {
     return;
   }
 
-  console.log("\n\nExiting...");
+  logger.info("nExiting...", { destination: "console" });
+
   process.exit(0);
 }

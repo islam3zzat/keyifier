@@ -3,16 +3,20 @@ import { waitForNextRequest } from "../../utils/fairness.js";
 import { fetchWithMissingKey } from "./fetch-products.js";
 import { setProductFieldKey } from "./update-product.js";
 import { ProductKeyableSubtype } from "./keyable-type/index.js";
+import { logger } from "../../lib/log.js";
 
 const createProductFetchAnProcess = (type: ProductKeyableSubtype) => {
   const fetcher = fetchWithMissingKey(type);
   const updater = setProductFieldKey(type);
 
+  let processed = 0;
+
   const fetchAndProcess = async (lastId?: string) => {
     const [error, body] = await fetcher(lastId);
 
     if (error) {
-      console.error(`Error fetching ${type}:`, error);
+      logger.error(`Error fetching ${type}:`, error, { destination: "all" });
+
       return;
     }
 
@@ -20,16 +24,16 @@ const createProductFetchAnProcess = (type: ProductKeyableSubtype) => {
     const lastProduct = products[products.length - 1];
 
     if (!lastProduct) {
-      console.log(`All ${type} have been processed`);
+      logger.info(`All ${type} have been processed`, { destination: "all" });
+
       return;
     }
 
-    let processed = 0;
     for (const product of products) {
       const updatedResources = await updater(product);
 
       processed += updatedResources;
-      console.log(`Processed ${processed} ${type}`);
+      logger.info(`Processed ${processed} ${type}`, { destination: "file" });
 
       await waitForNextRequest();
     }

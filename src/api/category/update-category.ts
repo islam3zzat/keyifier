@@ -30,12 +30,10 @@ const executeUpdateActions = async ({
   let actionsApplied = 0;
   for (const actions of actionBatches) {
     const variables = { id, version: version + actionsApplied, actions };
-    const res = await graphQlRequest({
+    await graphQlRequest({
       query: updateCategoryMutation,
       variables,
     });
-
-    console.log(res.body.errors);
 
     await waitForNextRequest();
   }

@@ -1,6 +1,7 @@
 import yargs from "yargs";
 import { configureCLI } from "./cli.js";
 import { Prompter } from "./prompter.js";
+import { logger } from "./lib/log.js";
 
 async function main() {
   console.clear();
@@ -16,8 +17,10 @@ async function main() {
 
   try {
     await getUserAction(prompter, argv);
-  } catch (error) {
-    console.error("Error:", error);
+  } catch (error: any) {
+    logger.error(error, {
+      destination: "all",
+    });
   }
 }
 

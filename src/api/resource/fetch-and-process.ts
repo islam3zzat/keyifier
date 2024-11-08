@@ -5,6 +5,7 @@ import {
   KeyableResourceType,
   resourceToQueryFields,
 } from "./keyable-type/index.js";
+import { logger } from "../../lib/log.js";
 
 type Resource = {
   id: string;
@@ -16,11 +17,14 @@ const createResourceFetchAnProcess = (type: KeyableResourceType) => {
   const updater = createUpdater(type);
   const { queryField } = resourceToQueryFields(type);
 
+  let processed = 0;
+
   const fetchAndProcess = async (lastId?: string) => {
     const [error, body] = await fetcher(lastId);
 
     if (error) {
-      console.error(`Error fetching ${type}:`, error);
+      logger.error(`Error fetching ${type}:`, error, { destination: "all" });
+
       return;
     }
 
@@ -28,16 +32,16 @@ const createResourceFetchAnProcess = (type: KeyableResourceType) => {
     const lastResource = resources[resources.length - 1];
 
     if (!lastResource) {
-      console.log(`All ${type} have been processed`);
+      logger.info(`All ${type} have been processed`, { destination: "all" });
+
       return;
     }
 
-    let processed = 0;
     for (const resource of resources) {
       const updatedResources = await updater(resource);
 
       processed += updatedResources;
-      console.log(`Processed ${processed} ${type}`);
+      logger.info(`Processed ${processed} ${type}`, { destination: "file" });
 
       await waitForNextRequest();
     }

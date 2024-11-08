@@ -23,9 +23,8 @@ const executeUpdateActions = async (
   let actionsApplied = 0;
   for (const actions of actionBatches) {
     const variables = { id, version: version + actionsApplied, actions };
-    console.log(mutation);
-    console.log(JSON.stringify({ variables }, null, 2));
-    const res = await graphQlRequest({
+
+    await graphQlRequest({
       query: mutation,
       variables,
     });

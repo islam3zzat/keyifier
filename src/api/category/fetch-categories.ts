@@ -6,6 +6,6 @@ import {
 
 export const fetchWithMissingKey = (keyableType: CategoryKeyableSubtype) => {
   const query = keyableTypeToQuery[keyableType];
-  console.log(JSON.stringify(query.query, null, 2));
+
   return createResourceFetcher(query);
 };
