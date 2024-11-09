@@ -1,4 +1,3 @@
-import { waitForNextRequest } from "../../utils/fairness.js";
 import { fetchWithMissingKey } from "./fetch-resources.js";
 import { createUpdater } from "./update-resource.js";
 import {
@@ -27,44 +26,58 @@ const createResourceFetchAnProcess = (type: KeyableResourceType) => {
   };
 
   startPeriodicReporting(progress, 5_000);
+  let intervalId: any;
 
   const fetchAndProcess = async (lastId?: string) => {
-    const [error, body] = await fetcher(lastId);
-
-    if (error) {
-      consoleLogger.error(`Error fetching ${type}:`, error);
-
-      return;
+    if (!intervalId) {
+      intervalId = setInterval(() => {
+        consoleLogger.info(`Processed ${progress.processed} ${type}`);
+      }, 5_000);
     }
+    try {
+      const [error, body] = await fetcher(lastId);
 
-    const resources: Resource[] = body[queryField].results;
-    const lastResource = resources[resources.length - 1];
+      if (error) {
+        consoleLogger.error(`Error fetching ${type}:`, error);
+        clearInterval(intervalId);
 
-    if (!lastResource) {
-      consoleLogger.info(`All ${type} have been processed`);
+        return;
+      }
 
-      return;
+      const resources: Resource[] = body[queryField].results;
+      const lastResource = resources[resources.length - 1];
+
+      if (!lastResource) {
+        consoleLogger.info(`All ${type} have been processed`);
+        clearInterval(intervalId);
+
+        return;
+      }
+
+      const resourceBatches = splitArray(resources, 15);
+
+      for (const resourceBatche of resourceBatches) {
+        const appliedResources = await Promise.all(resourceBatche.map(updater));
+
+        const updatedResources = appliedResources.reduce(
+          (acc, updatedResources) => acc + updatedResources,
+          0
+        );
+
+        progress.processed += updatedResources;
+        fileLogger.info(
+          "resources updated: " + resourceBatche.map(({ id }) => id).join(", ")
+        );
+        fileLogger.info(`Processed ${progress.processed} ${type}`);
+      }
+
+      await fetchAndProcess(lastResource.id);
+    } catch (error: any) {
+      consoleLogger.error(error.message);
+      clearInterval(intervalId);
+
+      throw error;
     }
-
-    const resourceBatches = splitArray(resources, 15);
-
-    for (const resourceBatche of resourceBatches) {
-      const appliedResources = await Promise.all(resourceBatche.map(updater));
-
-      const updatedResources = appliedResources.reduce(
-        (acc, updatedResources) => acc + updatedResources,
-        0
-      );
-
-      progress.processed += updatedResources;
-      fileLogger.info(
-        "resources updated: ",
-        resourceBatche.map(({ id }) => id).join(", ")
-      );
-      fileLogger.info(`Processed ${progress.processed} ${type}`);
-    }
-
-    await fetchAndProcess(lastResource.id);
   };
 
   return fetchAndProcess;

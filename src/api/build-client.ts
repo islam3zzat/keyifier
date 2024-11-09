@@ -1,6 +1,3 @@
-import path from "path";
-import { fileURLToPath } from "url";
-import fetch from "node-fetch";
 import {
   ClientBuilder,
   // Import middlewares
