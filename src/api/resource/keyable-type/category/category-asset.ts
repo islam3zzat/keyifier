@@ -20,7 +20,7 @@ export const keylessAssetsPredicate = `assets(${existWithoutKeyPredicate})`;
 
 export const getNextAssetKey = (categoryId: string, assetId: string) => {
   const prefix = "category_asset";
-  return `${prefix}_${categoryId}_${assetId}`;
+  return null;
 };
 
 const getAssetActions = (categoryId: string, assetIds: string[]) => {

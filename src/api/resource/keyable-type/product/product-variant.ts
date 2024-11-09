@@ -32,7 +32,7 @@ export const variantsQuery = `query ProductVariantsQuery($predicate: String!) {
 
 export const getNextVariantKey = (productId: string, variantId: number) => {
   const prefix = "variant";
-  return `${prefix}_${productId}_${variantId}`;
+  return null;
 };
 
 const productToVariantIds = (product: Product) => {

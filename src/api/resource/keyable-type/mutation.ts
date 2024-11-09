@@ -27,7 +27,7 @@ const updateResourceMutation = (resourceType: KeyableResourceType) => {
 const getNextResourceKey = (resourceType: KeyableResourceType, id: string) => {
   const prefix = `${resourceType}`;
 
-  return `${prefix}_${id}`;
+  return null;
 };
 
 const getResourceActions = (resourceType: KeyableResourceType, id: string) => {

@@ -36,7 +36,7 @@ export const pricesQuery = `query ProductPricesQuery($predicate: String!) {
 
 export const getNextPriceKey = (productId: string, priceId: string) => {
   const prefix = "price";
-  return `${prefix}_${productId}_${priceId}`;
+  return null;
 };
 
 const productToPriceIds = (product: Product) => {
