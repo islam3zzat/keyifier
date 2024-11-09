@@ -5,18 +5,34 @@ import {
   resourceToActionBatches,
   resourceMutationMap,
 } from "./keyable-type/index.js";
+import { consoleLogger } from "../../lib/log.js";
+
+type ActionBatch = Array<Record<string, any>>;
+
+interface UpdateParams {
+  id: string;
+  version: number;
+  actionBatches: ActionBatch[];
+}
+
+const executeGraphQLMutation = async (
+  mutation: string,
+  variables: Record<string, any>
+): Promise<void> => {
+  try {
+    await graphQlRequest({
+      query: mutation,
+      variables,
+    });
+  } catch (error) {
+    consoleLogger.error("GraphQL Request Error:", error);
+    throw error;
+  }
+};
 
 const executeUpdateActions = async (
   type: KeyableResourceType,
-  {
-    id,
-    version,
-    actionBatches,
-  }: {
-    id: string;
-    version: number;
-    actionBatches: any[][];
-  }
+  { id, version, actionBatches }: UpdateParams
 ) => {
   const { mutation } = resourceMutationMap[type];
 
@@ -24,11 +40,9 @@ const executeUpdateActions = async (
   for (const actions of actionBatches) {
     const variables = { id, version: version + actionsApplied, actions };
 
-    await graphQlRequest({
-      query: mutation,
-      variables,
-    });
+    await executeGraphQLMutation(mutation, variables);
 
+    actionsApplied += actions.length;
     await waitForNextRequest();
   }
 };
