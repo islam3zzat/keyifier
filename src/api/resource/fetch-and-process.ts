@@ -23,11 +23,13 @@ const DEFAULT_OPTIONS: FetchAndProcessOptions = {
   batchSize: 15,
   logInterval: 5_000,
 };
+type FetchTotalFunction = () => Promise<number | undefined>;
+type FetchProcessFunction = () => Promise<void>;
 
 const createResourceFetchAnProcess = (
   type: KeyableResourceType,
   options: FetchAndProcessOptions = {}
-) => {
+): FetchProcessFunction => {
   const { batchSize, logInterval } = {
     ...DEFAULT_OPTIONS,
     ...options,
@@ -107,54 +109,54 @@ const createResourceFetchAnProcess = (
   return fetchAndProcess;
 };
 
-export const fetchAndProcessDiscountCodeKeys = createResourceFetchAnProcess(
-  KeyableResourceType.DiscountCode
-);
+export const createTotalFetcher = (
+  type: KeyableResourceType
+): FetchTotalFunction => {
+  const { queryField } = resourceToQueryFields(type);
+  const fetcher = createResourceFetcher(resourceQueryPredicateMap[type], 0);
 
-export const fetchAndProcessCartDiscountKeys = createResourceFetchAnProcess(
-  KeyableResourceType.CartDiscount
-);
+  return async () => {
+    const [error, body] = await fetcher();
+    if (error) {
+      consoleLogger.error(`Error fetching ${type}:`, error);
 
-export const fetchAndProcessCustomerGroupKeys = createResourceFetchAnProcess(
-  KeyableResourceType.CustomerGroup
-);
+      return;
+    }
 
-export const fetchAndProcessCustomerKeys = createResourceFetchAnProcess(
-  KeyableResourceType.Customer
-);
+    const total = body[queryField].total;
 
-export const fetchAndProcessProductTypeKeys = createResourceFetchAnProcess(
-  KeyableResourceType.ProductType
-);
+    return total;
+  };
+};
 
-export const fetchAndProcessStandalonePriceKeys = createResourceFetchAnProcess(
-  KeyableResourceType.StandalonePrice
-);
+type FetchProcess = {
+  type: KeyableResourceType;
+  fetchTotal: FetchTotalFunction;
+  fetchProcess: FetchProcessFunction;
+};
 
-export const fetchAndProcessTaxCategoryKeys = createResourceFetchAnProcess(
-  KeyableResourceType.TaxCategory
-);
+const createFetchersMap = (types: KeyableResourceType[]): FetchProcess[] =>
+  types.map((type) => ({
+    type,
+    fetchTotal: createTotalFetcher(type),
+    fetchProcess: createResourceFetchAnProcess(type),
+  }));
 
-export const fetchAndProcessCategoryKeys = createResourceFetchAnProcess(
-  KeyableResourceType.Category
-);
+const productTypes = [
+  KeyableResourceType.Product,
+  KeyableResourceType.ProductAsset,
+  KeyableResourceType.ProductVariant,
+  KeyableResourceType.ProductPrice,
+];
+export const productFetchers = createFetchersMap(productTypes);
 
-export const fetchAndProcessCategoryAssetKeys = createResourceFetchAnProcess(
-  KeyableResourceType.CategoryAsset
-);
+const categoryTypes = [
+  KeyableResourceType.Category,
+  KeyableResourceType.CategoryAsset,
+];
+export const categoryFetchers = createFetchersMap(categoryTypes);
 
-export const fetchAndProcessProductKeys = createResourceFetchAnProcess(
-  KeyableResourceType.Product
+const otherTypes = Object.values(KeyableResourceType).filter(
+  (type) => !productTypes.includes(type) && !categoryTypes.includes(type)
 );
-
-export const fetchAndProcessProductAssetKeys = createResourceFetchAnProcess(
-  KeyableResourceType.ProductAsset
-);
-
-export const fetchAndProcessProductVariantKeys = createResourceFetchAnProcess(
-  KeyableResourceType.ProductVariant
-);
-
-export const fetchAndProcessProductPriceKeys = createResourceFetchAnProcess(
-  KeyableResourceType.ProductPrice
-);
+export const otherFetchers = createFetchersMap(otherTypes);

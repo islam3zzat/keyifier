@@ -48,8 +48,8 @@ const createResourceQuery = (resourceType: KeyableResourceType) => {
     return fieldQuery;
   }
 
-  return `query ${queryName}($predicate: String!) {
-    ${queryField}(where: $predicate, sort: "id asc", limit: 500) {
+  return `query ${queryName}($predicate: String!, $limit: Int) {
+    ${queryField}(where: $predicate, sort: "id asc", limit: $limit) {
       total
       results {
         id

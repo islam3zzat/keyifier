@@ -2,10 +2,10 @@ import { consoleLogger } from "../../lib/log.js";
 import { graphQlRequest } from "../graphql.js";
 
 type FetcherArgs = { query: string; predicate: string };
-export const createResourceFetcher = (args: FetcherArgs) => {
+export const createResourceFetcher = (args: FetcherArgs, limit = 500) => {
   const fetchResource = async (lastId?: string) => {
     const predicate = predicateWithId(args.predicate, lastId);
-    const variables = { predicate };
+    const variables = { predicate, limit: limit || 500 };
 
     const { body } = await graphQlRequest({ query: args.query, variables });
     const { data, errors } = body;

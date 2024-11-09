@@ -38,13 +38,39 @@ export class Prompter {
         return;
       }
 
-      await userSelection.action();
+      const total = await userSelection.fetchTotal();
+
+      await this.applyAfterConfirmation(userSelection.action, total);
     } catch (error: any) {
       handleUserExit(error);
 
       console.error(error);
       consoleLogger.error(error.message);
     }
+  }
+
+  async applyAfterConfirmation(callback: () => Promise<void>, total?: number) {
+    if (!total) {
+      consoleLogger.info("No resources without keys found.");
+      return;
+    }
+
+    const message = `You're about to update ${total} resource.\nAre you sure you want to proceed?`;
+
+    const { confirm } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "confirm",
+        message,
+      },
+    ]);
+
+    if (!confirm) {
+      consoleLogger.info("User cancelled the operation.");
+      return;
+    }
+
+    await callback();
   }
 
   async handleAction(action: string) {
