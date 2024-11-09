@@ -1,21 +1,14 @@
 import { consoleLogger } from "../../lib/log.js";
 import { graphQlRequest } from "../graphql.js";
 
-type FetcherParams = { query: string; predicate: string };
-export const createResourceFetcher = ({ query, predicate }: FetcherParams) => {
+type FetcherArgs = { query: string; predicate: string };
+export const createResourceFetcher = (args: FetcherArgs) => {
   const fetchResource = async (lastId?: string) => {
-    const idPredicate = lastId ? `id > "${lastId}"` : "";
+    const predicate = predicateWithId(args.predicate, lastId);
+    const variables = { predicate };
 
-    const queryPredicate = [predicate, idPredicate]
-      .filter(Boolean)
-      .join(" and ");
-
-    const {
-      body: { data, errors },
-    } = await graphQlRequest({
-      query,
-      variables: { predicate: queryPredicate },
-    });
+    const { body } = await graphQlRequest({ query: args.query, variables });
+    const { data, errors } = body;
 
     if (errors && errors.length > 0) {
       errors.forEach((error) => {
@@ -29,4 +22,10 @@ export const createResourceFetcher = ({ query, predicate }: FetcherParams) => {
   };
 
   return fetchResource;
+};
+
+const predicateWithId = (predicate: string, lastId?: string) => {
+  const idPredicate = lastId ? `id > "${lastId}"` : "";
+
+  return [predicate, idPredicate].filter(Boolean).join(" and ");
 };
