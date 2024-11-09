@@ -1,15 +1,10 @@
+import { camelToPascalWithSpace } from "./api/resource/camelcase-to-label.js";
 import {
   productFetchers,
   categoryFetchers,
   otherFetchers,
 } from "./api/resource/index.js";
 
-function camelToPascalWithSpace(input: string) {
-  return input
-    .replace(/([A-Z])/g, " $1")
-    .replace(/^./, (match) => match.toUpperCase())
-    .trim();
-}
 export type PromptOption = {
   choice: string;
   action: () => Promise<void>;
