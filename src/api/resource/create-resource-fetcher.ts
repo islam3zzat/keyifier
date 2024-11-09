@@ -1,13 +1,8 @@
-import { consoleLogger } from "../lib/log.js";
-import { graphQlRequest } from "./graphql.js";
+import { consoleLogger } from "../../lib/log.js";
+import { graphQlRequest } from "../graphql.js";
 
-export const createResourceFetcher = ({
-  query,
-  predicate,
-}: {
-  query: string;
-  predicate: string;
-}) => {
+type FetcherParams = { query: string; predicate: string };
+export const createResourceFetcher = ({ query, predicate }: FetcherParams) => {
   const fetchResource = async (lastId?: string) => {
     const idPredicate = lastId ? `id > "${lastId}"` : "";
 

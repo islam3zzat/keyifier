@@ -1,11 +1,12 @@
-import { fetchWithMissingKey } from "./fetch-resources.js";
 import { createUpdater } from "./update-resource.js";
 import {
   KeyableResourceType,
+  resourceQueryPredicateMap,
   resourceToQueryFields,
 } from "./keyable-type/index.js";
 import { consoleLogger, fileLogger } from "../../lib/log.js";
 import { splitArray } from "../../utils/split-actions.js";
+import { createResourceFetcher } from "./create-resource-fetcher.js";
 
 type Resource = {
   id: string;
@@ -13,8 +14,9 @@ type Resource = {
 };
 
 const createResourceFetchAnProcess = (type: KeyableResourceType) => {
-  const fetcher = fetchWithMissingKey(type);
+  const fetcher = createResourceFetcher(resourceQueryPredicateMap[type]);
   const updater = createUpdater(type);
+
   const { queryField } = resourceToQueryFields(type);
 
   const progress = {
