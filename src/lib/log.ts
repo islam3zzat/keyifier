@@ -38,27 +38,3 @@ export const fileLogger = createLogger({
   transports: newFileTransport(),
   exitOnError: false,
 });
-
-export const startPeriodicReporting = (
-  progress: { processed: number },
-  period: number
-) => {
-  let lastProcessed = progress.processed;
-
-  var intervalId = setInterval(() => {
-    const processed = progress.processed;
-
-    if (processed === lastProcessed) {
-      clearInterval(intervalId);
-      return;
-    }
-
-    if (processed > 0) {
-      consoleLogger.info(`Processed ${processed} resources so far.`, {
-        destination: "console",
-      });
-    }
-
-    lastProcessed = processed;
-  }, period);
-};

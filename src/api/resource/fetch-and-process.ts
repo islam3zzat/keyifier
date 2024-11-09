@@ -4,11 +4,7 @@ import {
   KeyableResourceType,
   resourceToQueryFields,
 } from "./keyable-type/index.js";
-import {
-  consoleLogger,
-  fileLogger,
-  startPeriodicReporting,
-} from "../../lib/log.js";
+import { consoleLogger, fileLogger } from "../../lib/log.js";
 import { splitArray } from "../../utils/split-actions.js";
 
 type Resource = {
@@ -25,13 +21,14 @@ const createResourceFetchAnProcess = (type: KeyableResourceType) => {
     processed: 0,
   };
 
-  startPeriodicReporting(progress, 5_000);
   let intervalId: any;
 
   const fetchAndProcess = async (lastId?: string) => {
     if (!intervalId) {
       intervalId = setInterval(() => {
-        consoleLogger.info(`Processed ${progress.processed} ${type}`);
+        consoleLogger.info(
+          `Processed ${progress.processed.toLocaleString()} ${type}`
+        );
       }, 5_000);
     }
     try {
