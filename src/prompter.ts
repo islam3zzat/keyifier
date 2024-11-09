@@ -11,8 +11,8 @@ export class Prompter {
         message: "Select the main action to perform:",
         choices: [
           { name: "Apply Keys to Product Resources", value: "productKeys" },
-          { name: "Query Category Keys", value: "categoryKeys" },
-          { name: "Query Resource Keys", value: "otherKeys" },
+          { name: "Apply Keys to Category Resources", value: "categoryKeys" },
+          { name: "Query Resources", value: "otherKeys" },
         ],
       },
     ]);
