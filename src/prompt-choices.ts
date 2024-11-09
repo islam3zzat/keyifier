@@ -1,6 +1,4 @@
-import * as product from "./api/product/index.js";
-import * as category from "./api/category/index.js";
-import * as otherResources from "./api/resource/index.js";
+import * as resource from "./api/resource/index.js";
 
 export type PromptOption = {
   choice: string;
@@ -10,61 +8,61 @@ export type PromptOption = {
 const productActions: PromptOption[] = [
   {
     choice: "Apply keys to Products",
-    action: product.fetchAndProcessProductKeys,
+    action: resource.fetchAndProcessProductKeys,
   },
   {
     choice: "Apply keys to Product Variants",
-    action: product.fetchAndProcessProductVariantKeys,
+    action: resource.fetchAndProcessProductVariantKeys,
   },
   {
     choice: "Apply keys to Product Prices",
-    action: product.fetchAndProcessProductPriceKeys,
+    action: resource.fetchAndProcessProductPriceKeys,
   },
   {
     choice: "Apply keys to Product Assets",
-    action: product.fetchAndProcessProductAssetKeys,
+    action: resource.fetchAndProcessProductAssetKeys,
   },
 ];
 
 const categoryActions: PromptOption[] = [
   {
     choice: "Apply keys to Categories",
-    action: category.fetchAndProcessCategoryKeys,
+    action: resource.fetchAndProcessCategoryKeys,
   },
   {
     choice: "Apply keys to Category Assets",
-    action: category.fetchAndProcessCategoryAssetKeys,
+    action: resource.fetchAndProcessCategoryAssetKeys,
   },
 ];
 
 const otherActions: PromptOption[] = [
   {
     choice: "Apply keys to DiscountCode",
-    action: otherResources.fetchAndProcessDiscountCodeKeys,
+    action: resource.fetchAndProcessDiscountCodeKeys,
   },
   {
     choice: "Apply keys to CartDiscount",
-    action: otherResources.fetchAndProcessCartDiscountKeys,
+    action: resource.fetchAndProcessCartDiscountKeys,
   },
   {
     choice: "Apply keys to CustomerGroup",
-    action: otherResources.fetchAndProcessCustomerGroupKeys,
+    action: resource.fetchAndProcessCustomerGroupKeys,
   },
   {
     choice: "Apply keys to Customer",
-    action: otherResources.fetchAndProcessCustomerKeys,
+    action: resource.fetchAndProcessCustomerKeys,
   },
   {
     choice: "Apply keys to ProductType",
-    action: otherResources.fetchAndProcessProductTypeKeys,
+    action: resource.fetchAndProcessProductTypeKeys,
   },
   {
     choice: "Apply keys to StandalonePrice",
-    action: otherResources.fetchAndProcessStandalonePriceKeys,
+    action: resource.fetchAndProcessStandalonePriceKeys,
   },
   {
     choice: "Apply keys to TaxCategory",
-    action: otherResources.fetchAndProcessTaxCategoryKeys,
+    action: resource.fetchAndProcessTaxCategoryKeys,
   },
 ];
 

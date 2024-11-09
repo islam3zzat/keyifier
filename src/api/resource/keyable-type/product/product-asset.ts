@@ -1,8 +1,8 @@
 import { Asset, Product, ProductVariant } from "@commercetools/platform-sdk";
-import { existWithoutKeyPredicate } from "../../resource/predicate.js";
-import { splitArray } from "../../../utils/split-actions.js";
+import { splitArray } from "../../../../utils/split-actions.js";
+import { existWithoutKeyPredicate } from "../../predicate.js";
 
-export const keylessAssetsPredicate = `
+export const keylessProductAssetsPredicate = `
   masterData(
     staged(
       masterVariant(assets(${existWithoutKeyPredicate})) or
@@ -11,7 +11,7 @@ export const keylessAssetsPredicate = `
   )
 `;
 
-export const assetsQuery = `query ProductAssetsQuery($predicate: String!) {
+export const productAssetsQuery = `query ProductAssetsQuery($predicate: String!) {
   products(where: $predicate, sort: "id asc", limit: 500) {
     total
     results {
@@ -34,13 +34,22 @@ export const assetsQuery = `query ProductAssetsQuery($predicate: String!) {
 }
 `;
 
+export const keylessAssetsPredicate = `
+  masterData(
+    staged(
+      masterVariant(assets(${existWithoutKeyPredicate})) or
+      variants(assets(${existWithoutKeyPredicate}))
+    )
+  )
+`;
+
+const getNextAssetKey = (productId: string, assetId: string) => {
+  const prefix = "asset";
+  return `${prefix}_${productId}_${assetId}`;
+};
 type VariantAsset = {
   variantId: number;
   assetId: string;
-};
-export const getNextAssetKey = (productId: string, assetId: string) => {
-  const prefix = "asset";
-  return `${prefix}_${productId}_${assetId}`;
 };
 
 const productToVariantAssets = (product: Product) => {

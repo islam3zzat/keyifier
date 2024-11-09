@@ -1,7 +1,11 @@
+import { Category, Product } from "@commercetools/platform-sdk";
+import { assetToActionBatches } from "./category/category-asset.js";
+import { assetToActionBatches as productAssetToActionBatches } from "./product/product-asset.js";
 import {
   KeyableResourceType,
   resourceToQueryFields,
 } from "./resource-to-query-fields.js";
+import { variantToActionBatches } from "./product/product-variant.js";
 
 const updateResourceMutation = (resourceType: KeyableResourceType) => {
   const { mutationName, actionTypeName } = resourceToQueryFields(resourceType);
@@ -38,12 +42,37 @@ const getResourceActions = (resourceType: KeyableResourceType, id: string) => {
   return [actions];
 };
 
+const subfieldToActionBatches = <T extends { id: string; version: number }>(
+  resourceType: KeyableResourceType,
+  resource: T
+) => {
+  if (resourceType === KeyableResourceType.CategoryAsset) {
+    return assetToActionBatches(resource as unknown as Category);
+  }
+
+  if (resourceType === KeyableResourceType.ProductAsset) {
+    return productAssetToActionBatches(resource as unknown as Product);
+  }
+
+  if (resourceType === KeyableResourceType.ProductVariant) {
+    return variantToActionBatches(resource as unknown as Product);
+  }
+};
+
 export const resourceToActionBatches = <
   T extends { id: string; version: number }
 >(
   resourceType: KeyableResourceType,
   resource: T
 ) => {
+  if (resourceType === KeyableResourceType.CategoryAsset) {
+    return assetToActionBatches(resource as unknown as Category);
+  }
+
+  if (resourceType === KeyableResourceType.ProductAsset) {
+    return productAssetToActionBatches(resource as unknown as Product);
+  }
+
   return getResourceActions(resourceType, resource.id);
 };
 
@@ -51,8 +80,20 @@ export const resourceMutationMap = {
   [KeyableResourceType.Product]: {
     mutation: updateResourceMutation(KeyableResourceType.Product),
   },
+  [KeyableResourceType.ProductAsset]: {
+    mutation: updateResourceMutation(KeyableResourceType.ProductAsset),
+  },
+  [KeyableResourceType.ProductVariant]: {
+    mutation: updateResourceMutation(KeyableResourceType.ProductVariant),
+  },
+  [KeyableResourceType.ProductPrice]: {
+    mutation: updateResourceMutation(KeyableResourceType.ProductPrice),
+  },
   [KeyableResourceType.Category]: {
     mutation: updateResourceMutation(KeyableResourceType.Category),
+  },
+  [KeyableResourceType.CategoryAsset]: {
+    mutation: updateResourceMutation(KeyableResourceType.CategoryAsset),
   },
   [KeyableResourceType.DiscountCode]: {
     mutation: updateResourceMutation(KeyableResourceType.DiscountCode),

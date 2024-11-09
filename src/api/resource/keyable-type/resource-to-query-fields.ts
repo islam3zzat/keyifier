@@ -1,6 +1,11 @@
 export enum KeyableResourceType {
   Product = "product",
+  ProductAsset = "productAsset",
+  ProductVariant = "productVariant",
+  ProductPrice = "productPrice",
+
   Category = "category",
+  CategoryAsset = "categoryAsset",
   DiscountCode = "discountCode",
   CartDiscount = "cartDiscount",
   CustomerGroup = "customerGroup",
@@ -17,63 +22,77 @@ interface ResourceQueryFields {
   actionTypeName: string;
 }
 
-const resourceQueryFieldMap: Record<KeyableResourceType, ResourceQueryFields> =
-  {
-    [KeyableResourceType.Product]: {
-      queryName: "ProductsQuery",
-      queryField: "products",
-      mutationName: "updateProduct",
-      actionTypeName: "ProductUpdateAction",
-    },
-    [KeyableResourceType.Category]: {
-      queryName: "CategoriesQuery",
-      queryField: "categories",
-      mutationName: "updateCategory",
-      actionTypeName: "CategoryUpdateAction",
-    },
-    [KeyableResourceType.DiscountCode]: {
-      queryName: "DiscountCodesQuery",
-      queryField: "discountCodes",
-      mutationName: "updateDiscountCode",
-      actionTypeName: "DiscountCodeUpdateAction",
-    },
-    [KeyableResourceType.CartDiscount]: {
-      queryName: "CartDiscountsQuery",
-      queryField: "cartDiscounts",
-      mutationName: "updateCartDiscount",
-      actionTypeName: "CartDiscountUpdateAction",
-    },
-    [KeyableResourceType.CustomerGroup]: {
-      queryName: "CustomerGroupsQuery",
-      queryField: "customerGroups",
-      mutationName: "updateCustomerGroup",
-      actionTypeName: "CustomerGroupUpdateAction",
-    },
-    [KeyableResourceType.Customer]: {
-      queryName: "CustomersQuery",
-      queryField: "customers",
-      mutationName: "updateCustomer",
-      actionTypeName: "CustomerUpdateAction",
-    },
-    [KeyableResourceType.ProductType]: {
-      queryName: "ProductTypesQuery",
-      queryField: "productTypes",
-      mutationName: "updateProductType",
-      actionTypeName: "ProductTypeUpdateAction",
-    },
-    [KeyableResourceType.StandalonePrice]: {
-      queryName: "StandalonePricesQuery",
-      queryField: "standalonePrices",
-      mutationName: "updateStandalonePrice",
-      actionTypeName: "StandalonePriceUpdateAction",
-    },
-    [KeyableResourceType.TaxCategory]: {
-      queryName: "TaxCategoriesQuery",
-      queryField: "taxCategories",
-      mutationName: "updateTaxCategory",
-      actionTypeName: "TaxCategoryUpdateAction",
-    },
-  };
+const resourceToQueryField = (type: KeyableResourceType) => {
+  switch (type) {
+    case KeyableResourceType.Product:
+    case KeyableResourceType.ProductAsset:
+    case KeyableResourceType.ProductVariant:
+    case KeyableResourceType.ProductPrice:
+      return {
+        queryName: "ProductsQuery",
+        queryField: "products",
+        mutationName: "updateProduct",
+        actionTypeName: "ProductUpdateAction",
+      };
+    case KeyableResourceType.Category:
+    case KeyableResourceType.CategoryAsset:
+      return {
+        queryName: "CategoriesQuery",
+        queryField: "categories",
+        mutationName: "updateCategory",
+        actionTypeName: "CategoryUpdateAction",
+      };
+    case KeyableResourceType.DiscountCode:
+      return {
+        queryName: "DiscountCodesQuery",
+        queryField: "discountCodes",
+        mutationName: "updateDiscountCode",
+        actionTypeName: "DiscountCodeUpdateAction",
+      };
+    case KeyableResourceType.CartDiscount:
+      return {
+        queryName: "CartDiscountsQuery",
+        queryField: "cartDiscounts",
+        mutationName: "updateCartDiscount",
+        actionTypeName: "CartDiscountUpdateAction",
+      };
+    case KeyableResourceType.CustomerGroup:
+      return {
+        queryName: "CustomerGroupsQuery",
+        queryField: "customerGroups",
+        mutationName: "updateCustomerGroup",
+        actionTypeName: "CustomerGroupUpdateAction",
+      };
+    case KeyableResourceType.Customer:
+      return {
+        queryName: "CustomersQuery",
+        queryField: "customers",
+        mutationName: "updateCustomer",
+        actionTypeName: "CustomerUpdateAction",
+      };
+    case KeyableResourceType.ProductType:
+      return {
+        queryName: "ProductTypesQuery",
+        queryField: "productTypes",
+        mutationName: "updateProductType",
+        actionTypeName: "ProductTypeUpdateAction",
+      };
+    case KeyableResourceType.StandalonePrice:
+      return {
+        queryName: "StandalonePricesQuery",
+        queryField: "standalonePrices",
+        mutationName: "updateStandalonePrice",
+        actionTypeName: "StandalonePriceUpdateAction",
+      };
+    case KeyableResourceType.TaxCategory:
+      return {
+        queryName: "TaxCategoriesQuery",
+        queryField: "taxCategories",
+        mutationName: "updateTaxCategory",
+        actionTypeName: "TaxCategoryUpdateAction",
+      };
+  }
+};
 
 function assertValidResourceType(resourceType: any): never {
   throw new Error(`Unknown resource type: ${resourceType}`);
@@ -82,7 +101,7 @@ function assertValidResourceType(resourceType: any): never {
 export const resourceToQueryFields = (
   resourceType: KeyableResourceType
 ): ResourceQueryFields => {
-  const fields = resourceQueryFieldMap[resourceType];
+  const fields = resourceToQueryField(resourceType);
   if (!fields) assertValidResourceType(resourceType);
 
   return fields;

@@ -6,6 +6,7 @@ import {
   resourceToQueryFields,
 } from "./keyable-type/index.js";
 import { logger, startPeriodicReporting } from "../../lib/log.js";
+import { splitArray } from "../../utils/split-actions.js";
 
 type Resource = {
   id: string;
@@ -41,8 +42,15 @@ const createResourceFetchAnProcess = (type: KeyableResourceType) => {
       return;
     }
 
-    for (const resource of resources) {
-      const updatedResources = await updater(resource);
+    const resourceBatches = splitArray(resources, 10);
+
+    for (const resourceBatche of resourceBatches) {
+      const appliedResources = await Promise.all(resourceBatche.map(updater));
+
+      const updatedResources = appliedResources.reduce(
+        (acc, updatedResources) => acc + updatedResources,
+        0
+      );
 
       progress.processed += updatedResources;
       logger.info(`Processed ${progress.processed} ${type}`, {
@@ -50,7 +58,7 @@ const createResourceFetchAnProcess = (type: KeyableResourceType) => {
       });
     }
 
-    fetchAndProcess(lastResource.id);
+    await fetchAndProcess(lastResource.id);
   };
 
   return fetchAndProcess;
@@ -82,4 +90,28 @@ export const fetchAndProcessStandalonePriceKeys = createResourceFetchAnProcess(
 
 export const fetchAndProcessTaxCategoryKeys = createResourceFetchAnProcess(
   KeyableResourceType.TaxCategory
+);
+
+export const fetchAndProcessCategoryKeys = createResourceFetchAnProcess(
+  KeyableResourceType.Category
+);
+
+export const fetchAndProcessCategoryAssetKeys = createResourceFetchAnProcess(
+  KeyableResourceType.CategoryAsset
+);
+
+export const fetchAndProcessProductKeys = createResourceFetchAnProcess(
+  KeyableResourceType.Product
+);
+
+export const fetchAndProcessProductAssetKeys = createResourceFetchAnProcess(
+  KeyableResourceType.ProductAsset
+);
+
+export const fetchAndProcessProductVariantKeys = createResourceFetchAnProcess(
+  KeyableResourceType.ProductVariant
+);
+
+export const fetchAndProcessProductPriceKeys = createResourceFetchAnProcess(
+  KeyableResourceType.ProductPrice
 );

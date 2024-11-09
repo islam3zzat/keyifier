@@ -35,7 +35,7 @@ export const consoleLogger = createLogger({
 });
 export const logger = createLogger({
   format: combinedFormat,
-  transports: [...newFileTransport()],
+  transports: [...newFileTransport(), newConsoleTransport()],
   exitOnError: false,
 });
 

@@ -1,10 +1,8 @@
 import { Category } from "@commercetools/platform-sdk";
-import { existWithoutKeyPredicate } from "../../resource/predicate.js";
-import { splitArray } from "../../../utils/split-actions.js";
+import { splitArray } from "../../../../utils/split-actions.js";
+import { existWithoutKeyPredicate } from "../../predicate.js";
 
-export const keylessAssetsPredicate = `assets(${existWithoutKeyPredicate})`;
-
-export const assetsQuery = `query CategoryAssetsQuery($predicate: String!) {
+export const categoryAssetsQuery = `query CategoryAssetsQuery($predicate: String!) {
   categories(where: $predicate, sort: "id asc", limit: 500) {
     total
     results {
@@ -18,16 +16,11 @@ export const assetsQuery = `query CategoryAssetsQuery($predicate: String!) {
   }
 }
 `;
+export const keylessAssetsPredicate = `assets(${existWithoutKeyPredicate})`;
 
 export const getNextAssetKey = (categoryId: string, assetId: string) => {
   const prefix = "category_asset";
   return `${prefix}_${categoryId}_${assetId}`;
-};
-
-const categoryToVariantIds = (category: Category) => {
-  const assets = category.assets || [];
-
-  return assets.map(({ id }) => id);
 };
 
 const getAssetActions = (categoryId: string, assetIds: string[]) => {
@@ -43,6 +36,12 @@ const getAssetActions = (categoryId: string, assetIds: string[]) => {
   });
 
   return splitArray(actions);
+};
+
+const categoryToVariantIds = (category: Category) => {
+  const assets = category.assets || [];
+
+  return assets.map(({ id }) => id);
 };
 
 export const assetToActionBatches = (category: Category) => {
