@@ -21,15 +21,14 @@ type FetchAndProcessOptions = {
 
 const DEFAULT_OPTIONS: FetchAndProcessOptions = {
   batchSize: 15,
-  logInterval: 5000,
-  concurrencyLimit: 3,
+  logInterval: 5_000,
 };
 
 const createResourceFetchAnProcess = (
   type: KeyableResourceType,
   options: FetchAndProcessOptions = {}
 ) => {
-  const { batchSize, logInterval, concurrencyLimit } = {
+  const { batchSize, logInterval } = {
     ...DEFAULT_OPTIONS,
     ...options,
   };
