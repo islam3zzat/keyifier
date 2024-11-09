@@ -1,4 +1,4 @@
-import { logger } from "../lib/log.js";
+import { consoleLogger } from "../lib/log.js";
 import { graphQlRequest } from "./graphql.js";
 
 export const createResourceFetcher = ({
@@ -24,7 +24,7 @@ export const createResourceFetcher = ({
 
     if (errors && errors.length > 0) {
       errors.forEach((error) => {
-        logger.error(error.message, { destination: "all" });
+        consoleLogger.error(error.message);
       });
 
       return [errors, null];

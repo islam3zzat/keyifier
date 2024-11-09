@@ -6,6 +6,7 @@ import {
   resourceToQueryFields,
 } from "./resource-to-query-fields.js";
 import { variantToActionBatches } from "./product/product-variant.js";
+import { priceToActionBatches } from "./product/product-price.js";
 
 const updateResourceMutation = (resourceType: KeyableResourceType) => {
   const { mutationName, actionTypeName } = resourceToQueryFields(resourceType);
@@ -71,6 +72,14 @@ export const resourceToActionBatches = <
 
   if (resourceType === KeyableResourceType.ProductAsset) {
     return productAssetToActionBatches(resource as unknown as Product);
+  }
+
+  if (resourceType === KeyableResourceType.ProductVariant) {
+    return variantToActionBatches(resource as unknown as Product);
+  }
+
+  if (resourceType === KeyableResourceType.ProductPrice) {
+    return priceToActionBatches(resource as unknown as Product);
   }
 
   return getResourceActions(resourceType, resource.id);

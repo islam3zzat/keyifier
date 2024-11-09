@@ -5,7 +5,11 @@ import {
   KeyableResourceType,
   resourceToQueryFields,
 } from "./keyable-type/index.js";
-import { logger, startPeriodicReporting } from "../../lib/log.js";
+import {
+  consoleLogger,
+  fileLogger,
+  startPeriodicReporting,
+} from "../../lib/log.js";
 import { splitArray } from "../../utils/split-actions.js";
 
 type Resource = {
@@ -28,7 +32,7 @@ const createResourceFetchAnProcess = (type: KeyableResourceType) => {
     const [error, body] = await fetcher(lastId);
 
     if (error) {
-      logger.error(`Error fetching ${type}:`, error, { destination: "all" });
+      consoleLogger.error(`Error fetching ${type}:`, error);
 
       return;
     }
@@ -37,12 +41,12 @@ const createResourceFetchAnProcess = (type: KeyableResourceType) => {
     const lastResource = resources[resources.length - 1];
 
     if (!lastResource) {
-      logger.info(`All ${type} have been processed`, { destination: "all" });
+      consoleLogger.info(`All ${type} have been processed`);
 
       return;
     }
 
-    const resourceBatches = splitArray(resources, 10);
+    const resourceBatches = splitArray(resources, 15);
 
     for (const resourceBatche of resourceBatches) {
       const appliedResources = await Promise.all(resourceBatche.map(updater));
@@ -53,9 +57,11 @@ const createResourceFetchAnProcess = (type: KeyableResourceType) => {
       );
 
       progress.processed += updatedResources;
-      logger.info(`Processed ${progress.processed} ${type}`, {
-        destination: "file",
-      });
+      fileLogger.info(
+        "resources updated: ",
+        resourceBatche.map(({ id }) => id).join(", ")
+      );
+      fileLogger.info(`Processed ${progress.processed} ${type}`);
     }
 
     await fetchAndProcess(lastResource.id);
