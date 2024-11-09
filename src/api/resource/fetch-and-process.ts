@@ -13,32 +13,58 @@ type Resource = {
   version: number;
 };
 
-const createResourceFetchAnProcess = (type: KeyableResourceType) => {
-  const fetcher = createResourceFetcher(resourceQueryPredicateMap[type]);
-  const updater = createUpdater(type);
+type FetchAndProcessOptions = {
+  batchSize?: number;
+  logInterval?: number;
+  concurrencyLimit?: number;
+};
 
-  const { queryField } = resourceToQueryFields(type);
+const DEFAULT_OPTIONS: FetchAndProcessOptions = {
+  batchSize: 15,
+  logInterval: 5000,
+  concurrencyLimit: 3,
+};
 
-  const progress = {
-    processed: 0,
+const createResourceFetchAnProcess = (
+  type: KeyableResourceType,
+  options: FetchAndProcessOptions = {}
+) => {
+  const { batchSize, logInterval, concurrencyLimit } = {
+    ...DEFAULT_OPTIONS,
+    ...options,
   };
 
-  let intervalId: any;
+  const fetcher = createResourceFetcher(resourceQueryPredicateMap[type]);
+  const updater = createUpdater(type);
+  const { queryField } = resourceToQueryFields(type);
+
+  const progress = { processed: 0 };
+
+  let intervalId: NodeJS.Timeout | undefined;
+
+  const logProgress = () => {
+    intervalId = setInterval(() => {
+      consoleLogger.info(
+        `Processed ${progress.processed.toLocaleString()} ${type}`
+      );
+    }, logInterval);
+  };
+
+  const stopProgressLog = () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+    }
+  };
 
   const fetchAndProcess = async (lastId?: string) => {
-    if (!intervalId) {
-      intervalId = setInterval(() => {
-        consoleLogger.info(
-          `Processed ${progress.processed.toLocaleString()} ${type}`
-        );
-      }, 5_000);
-    }
+    if (!intervalId) logProgress();
+
     try {
       const [error, body] = await fetcher(lastId);
 
       if (error) {
         consoleLogger.error(`Error fetching ${type}:`, error);
-        clearInterval(intervalId);
+        stopProgressLog();
 
         return;
       }
@@ -48,12 +74,12 @@ const createResourceFetchAnProcess = (type: KeyableResourceType) => {
 
       if (!lastResource) {
         consoleLogger.info(`All ${type} have been processed`);
-        clearInterval(intervalId);
+        stopProgressLog();
 
         return;
       }
 
-      const resourceBatches = splitArray(resources, 15);
+      const resourceBatches = splitArray(resources, batchSize);
 
       for (const resourceBatche of resourceBatches) {
         const appliedResources = await Promise.all(resourceBatche.map(updater));
@@ -73,7 +99,7 @@ const createResourceFetchAnProcess = (type: KeyableResourceType) => {
       await fetchAndProcess(lastResource.id);
     } catch (error: any) {
       consoleLogger.error(error.message);
-      clearInterval(intervalId);
+      stopProgressLog();
 
       throw error;
     }
