@@ -27,7 +27,7 @@ const DEFAULT_OPTIONS: FetchAndProcessOptions = {
 type FetchTotalFunction = () => Promise<number | undefined>;
 type FetchProcessFunction = () => Promise<void>;
 
-const createResourceFetchAnProcess = (
+const createResourceFetchAndProcess = (
   type: KeyableResourceType,
   options: FetchAndProcessOptions = {}
 ): FetchProcessFunction => {
@@ -140,7 +140,7 @@ const createFetchersMap = (types: KeyableResourceType[]): FetchProcess[] =>
   types.map((type) => ({
     type,
     fetchTotal: createTotalFetcher(type),
-    fetchProcess: createResourceFetchAnProcess(type),
+    fetchProcess: createResourceFetchAndProcess(type),
   }));
 
 const productTypes = [
