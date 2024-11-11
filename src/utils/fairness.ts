@@ -1,8 +1,7 @@
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const REQUESTS_PER_SECOND = 200;
-
-const afterRequetGap = 1_000 / REQUESTS_PER_SECOND;
+const afterRequetGap = 5;
+export const UPDATE_BATCH_SIZE = 15;
 
 export const waitForNextRequest = async () => {
   return await sleep(afterRequetGap);

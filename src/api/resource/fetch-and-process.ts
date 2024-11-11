@@ -7,6 +7,7 @@ import {
 import { consoleLogger, fileLogger } from "../../lib/log.js";
 import { splitArray } from "../../utils/split-actions.js";
 import { createResourceFetcher } from "./create-resource-fetcher.js";
+import { UPDATE_BATCH_SIZE } from "../../utils/fairness.js";
 
 type Resource = {
   id: string;
@@ -20,7 +21,7 @@ type FetchAndProcessOptions = {
 };
 
 const DEFAULT_OPTIONS: FetchAndProcessOptions = {
-  batchSize: 15,
+  batchSize: UPDATE_BATCH_SIZE,
   logInterval: 5_000,
 };
 type FetchTotalFunction = () => Promise<number | undefined>;
